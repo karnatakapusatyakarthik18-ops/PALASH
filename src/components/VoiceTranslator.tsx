@@ -24,7 +24,7 @@ interface StudentPrompt {
 export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) => {
   const { themeConfig } = useTheme();
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('teacher_to_student');
-  const [micLang, setMicLang] = useState<'en-IN' | 'hi-IN'>('en-IN');
+  const [micLang, setMicLang] = useState<'en-IN' | 'hi-IN'>('hi-IN');
   const [isListening, setIsListening] = useState(false);
   const [lastLatencyMs, setLastLatencyMs] = useState<number | null>(320);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -161,6 +161,14 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   };
 
   const teacherQuickPrompts = [
+    // Classroom Lesson Explanations
+    { text: 'बच्चों आज हम एक कहानी पढ़ेंगे', label: '📖 बच्चों आज हम एक कहानी पढ़ेंगे (Lesson story)' },
+    { text: 'किताब में देखो और ध्यान से सुनो', label: '👀 किताब में देखो और ध्यान से सुनो (Listen carefully)' },
+    { text: 'गाय हमें दूध देती है', label: '🐄 गाय हमें दूध देती है (Cow gives milk)' },
+    { text: 'पेड़ पर मीठे फल हैं', label: '🌳 पेड़ पर मीठे फल हैं (Sweet fruits on tree)' },
+    { text: 'हम रोज स्कूल जाते हैं', label: '🏫 हम रोज स्कूल जाते हैं (Daily school)' },
+    { text: 'सूरज सुबह पूर्व में उगता है', label: '☀️ सूरज सुबह पूर्व में उगता है (Sun rises in east)' },
+    // Core Classroom Instructions
     { text: 'अपनी किताब खोलो', label: 'अपनी किताब खोलो (Open books)' },
     { text: 'बैठ जाओ', label: 'बैठ जाओ (Sit down)' },
     { text: 'खड़े हो जाओ', label: 'खड़े हो जाओ (Stand up)' },

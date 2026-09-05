@@ -83,6 +83,40 @@ assert(enWater.targetText.includes('ᱫᱟᱜ'), 'English "Drink water" translat
 const enTree = PalashNLPTranslator.translate('This is a tree', 'santhali');
 assert(enTree.targetText.includes('ᱫᱟᱨᱮ') && enTree.targetText.includes('ᱠᱟᱱᱟ'), 'English "This is a tree" translates to Ol Chiki ᱫᱟᱨᱮ + ᱠᱟᱱᱟ', enTree);
 
+// Test 14: Lesson Story Explanation "बच्चों आज हम एक कहानी पढ़ेंगे" -> Santhali Ol Chiki
+const tLesson1 = PalashNLPTranslator.translate('बच्चों आज हम एक कहानी पढ़ेंगे', 'santhali');
+assert(/[\u1C50-\u1C7F]/.test(tLesson1.targetText), 'Lesson 1 translates to authentic Ol Chiki script', tLesson1);
+assert(!tLesson1.targetText.includes('पढ़ेंगे'), 'Lesson 1 targetText has zero untranslated Hindi verbs', tLesson1);
+assert(tLesson1.devanagariPhonetic.includes('पाड़हाव') || tLesson1.devanagariPhonetic.includes('काहनी'), 'Lesson 1 devanagariPhonetic speaks tribal phonetics', tLesson1.devanagariPhonetic);
+assert(!tLesson1.devanagariPhonetic.includes('पढ़ेंगे'), 'Lesson 1 devanagariPhonetic does not echo Hindi "पढ़ेंगे"', tLesson1.devanagariPhonetic);
+
+// Test 15: Lesson Attention "किताब में देखो और ध्यान से सुनो" -> Santhali
+const tLesson2 = PalashNLPTranslator.translate('किताब में देखो और ध्यान से सुनो', 'santhali');
+assert(tLesson2.targetText.includes('ᱯᱳᱛᱷᱤ') && (tLesson2.targetText.includes('ᱧᱮᱞ') || tLesson2.targetText.includes('ᱟᱸᱡᱚᱢ')), 'Lesson 2 contains Ol Chiki pothi, nyel or aanjom', tLesson2);
+assert(!tLesson2.devanagariPhonetic.includes('देखो'), 'Lesson 2 devanagariPhonetic does not echo Hindi "देखो"', tLesson2.devanagariPhonetic);
+
+// Test 16: Lesson Fact "गाय हमें दूध देती है" -> Santhali
+const tLesson3 = PalashNLPTranslator.translate('गाय हमें दूध देती है', 'santhali');
+assert(tLesson3.targetText.includes('ᱜᱟᱹᱭ') && tLesson3.targetText.includes('ᱛᱳᱣᱟ'), 'Lesson 3 contains Ol Chiki gai and towa', tLesson3);
+assert(tLesson3.devanagariPhonetic.includes('गई') && tLesson3.devanagariPhonetic.includes('तोवा'), 'Lesson 3 speaks Santhali "गई" and "तोवा"', tLesson3.devanagariPhonetic);
+
+// Test 17: Nature Observation "पेड़ पर मीठे फल हैं" -> Santhali
+const tLesson4 = PalashNLPTranslator.translate('पेड़ पर मीठे फल हैं', 'santhali');
+assert(tLesson4.targetText.includes('ᱫᱟᱨᱮ') && tLesson4.targetText.includes('ᱡᱚ'), 'Lesson 4 contains Ol Chiki dare and jo', tLesson4);
+assert(tLesson4.devanagariPhonetic.includes('दारे') && tLesson4.devanagariPhonetic.includes('जो'), 'Lesson 4 speaks Santhali "दारे" and "जो"', tLesson4.devanagariPhonetic);
+
+// Test 18: Lesson Explanation in Ho Language
+const hoLesson = PalashNLPTranslator.translate('बच्चों आज हम एक कहानी पढ़ेंगे', 'ho');
+assert(hoLesson.devanagariPhonetic.includes('होनको') && (hoLesson.devanagariPhonetic.includes('पइड़ाव') || hoLesson.devanagariPhonetic.includes('कहाणी')), 'Ho lesson contains "होनको" and "पइड़ाव/कहाणी"', hoLesson);
+
+// Test 19: Lesson Explanation in Mundari Language
+const munLesson = PalashNLPTranslator.translate('बच्चों आज हम एक कहानी पढ़ेंगे', 'mundari');
+assert(munLesson.devanagariPhonetic.includes('होनको') && (munLesson.devanagariPhonetic.includes('पड़ाव') || munLesson.devanagariPhonetic.includes('कहाणी')), 'Mundari lesson contains "होनको" and "पड़ाव/कहाणी"', munLesson);
+
+// Test 20: Daily Classroom Activity "हम रोज स्कूल जाते हैं" -> Santhali
+const tLesson5 = PalashNLPTranslator.translate('हम रोज स्कूल जाते हैं', 'santhali');
+assert(tLesson5.targetText.includes('ᱟᱥᱲᱟ') || tLesson5.targetText.includes('ᱫᱤᱱᱟᱹᱢ'), 'Lesson 5 contains Ol Chiki asra or dinam', tLesson5);
+
 console.log("\n-------------------------------------------------");
 console.log(`Verification Summary: ${passed} / ${total} Tests Passed (${Math.round(passed/total*100)}%)`);
 console.log("-------------------------------------------------");
