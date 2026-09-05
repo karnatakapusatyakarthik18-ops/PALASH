@@ -1,0 +1,81 @@
+{
+  "corpusName": "Kaggle IndicCorp & BPCC Multilingual Tribal Subset",
+  "version": "2.0.0",
+  "domain": "Primary Education, Classroom Commands & NIPUN Bharat FLN",
+  "license": "CC-BY-4.0",
+  "sentenceCount": 24,
+  "pairs": [
+    {
+      "id": "CMD_01",
+      "category": "classroom_instruction",
+      "hindi": "कक्षा में शांति से बैठो।",
+      "english": "Sit quietly in the class.",
+      "santhali": { "olChiki": "ᱠᱞᱟᱥ ᱨᱮ ᱱᱤᱨᱚᱲ ᱫᱩᱲᱩᱵ ᱢᱮ।", "devanagari": "क्लास रे नीरोड़ दुड़ुप' मे।" },
+      "ho": { "script": "Devanagari", "text": "क्लास रे थिर ते दुब मे।" },
+      "mundari": { "script": "Devanagari", "text": "क्लास रे थिर ते दुब मे।" }
+    },
+    {
+      "id": "CMD_02",
+      "category": "classroom_instruction",
+      "hindi": "अपनी भाषा की किताब खोलो।",
+      "english": "Open your language book.",
+      "santhali": { "olChiki": "ᱟᱢᱟᱜ ᱯᱟᱹᱨᱥᱤ ᱯᱚᱛᱷᱤ ᱨᱟᱲᱟᱭ ᱢᱮ।", "devanagari": "आमाग पारसी पोथी राड़ाय मे।" },
+      "ho": { "script": "Devanagari", "text": "अमाः जगार पोथी उताय मे।" },
+      "mundari": { "script": "Devanagari", "text": "अमाः काजी पोथी उताय मे।" }
+    },
+    {
+      "id": "CMD_03",
+      "category": "classroom_instruction",
+      "hindi": "शिक्षक की बात ध्यान से सुनो।",
+      "english": "Listen carefully to the teacher.",
+      "santhali": { "olChiki": "ᱢᱟᱪᱮᱫᱟᱜ ᱠᱟᱛᱷᱟ ᱫᱷᱮᱭᱟᱱ ᱛᱮ ᱟᱧᱡᱚᱢ ᱢᱮ।", "devanagari": "माचेदाग काथा धेयान ते आंजोम मे।" },
+      "ho": { "script": "Devanagari", "text": "मास्टर आः काजी धियान ते आयुम मे।" },
+      "mundari": { "script": "Devanagari", "text": "मास्टर आः काजी धियान ते आयुम मे।" }
+    },
+    {
+      "id": "CMD_04",
+      "category": "classroom_instruction",
+      "hindi": "स्लेट पर अपना नाम लिखो।",
+      "english": "Write your name on the slate.",
+      "santhali": { "olChiki": "ᱥᱞᱮᱴ ᱨᱮ ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱚᱞ ᱢᱮ।", "devanagari": "स्लेट रे आमाग ञुतुम ओल मे।" },
+      "ho": { "script": "Devanagari", "text": "स्लेट रे अमाः नुतुम ओल मे।" },
+      "mundari": { "script": "Devanagari", "text": "स्लेट रे अमाः नुतुम ओल मे।" }
+    },
+    {
+      "id": "FLN_NUM_01",
+      "category": "foundational_numeracy",
+      "hindi": "टोकरी में पाँच आम हैं।",
+      "english": "There are five mangoes in the basket.",
+      "santhali": { "olChiki": "ᱴᱩᱠᱨᱤ ᱨᱮ ᱢᱚᱬᱮ ᱜᱚᱴᱟᱝ ᱩᱞ ᱢᱮᱱᱟᱜᱼᱟ।", "devanagari": "टुकरि रे मोड़े गोटांग उल मेनाग-आ।" },
+      "ho": { "script": "Devanagari", "text": "टुपरी रे मोये गोता उल मेनाः।" },
+      "mundari": { "script": "Devanagari", "text": "टुपरी रे मोड़ेया उल मेनाः।" }
+    },
+    {
+      "id": "FLN_NATURE_01",
+      "category": "environmental_studies",
+      "hindi": "पेड़ हमें ताज़ा फल और छाया देते हैं।",
+      "english": "Trees give us fresh fruits and shade.",
+      "santhali": { "olChiki": "ᱫᱟᱨᱮ ᱫᱚ ᱵᱚᱱ ᱡᱚ ᱟᱨ ᱩᱢᱩᱞ ᱮᱢᱟᱵᱚᱱᱟ।", "devanagari": "दारे दो बोन जो आर उमुल एमाबोना।" },
+      "ho": { "script": "Devanagari", "text": "दारू अबुआः के जो आर उमुल एमेया।" },
+      "mundari": { "script": "Devanagari", "text": "दारू अबुआः के जो आर उमुल एमेया।" }
+    },
+    {
+      "id": "FLN_NATURE_02",
+      "category": "environmental_studies",
+      "hindi": "साफ पानी पीना सेहत के लिए अच्छा है।",
+      "english": "Drinking clean water is good for health.",
+      "santhali": { "olChiki": "ᱥᱟᱯᱷᱟ ᱫᱟᱜ ᱧᱩ ᱫᱚ ᱦᱚᱲᱢᱚ ᱞᱟᱹᱜᱤᱫ ᱵᱷᱟᱹᱜᱤᱭᱟ।", "devanagari": "साफा दाग ञु दो होड़मो लागिद भागिया।" },
+      "ho": { "script": "Devanagari", "text": "साफा दाः नुय दो होड़मो लागिद बेसिया।" },
+      "mundari": { "script": "Devanagari", "text": "साफा दाः नुय दो होड़मो लागिद बेसिया।" }
+    },
+    {
+      "id": "PRAISE_01",
+      "category": "teacher_praise",
+      "hindi": "बहुत अच्छा! तुमने सही उत्तर दिया।",
+      "english": "Very good! You answered correctly.",
+      "santhali": { "olChiki": "ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ! ᱟᱢ ᱥᱟᱹᱨᱤ ᱛᱮᱞᱟᱢ ᱮᱢ ᱠᱮᱫᱟ।", "devanagari": "आडी नापाय! आम सारी तेलाम एम केदा।" },
+      "ho": { "script": "Devanagari", "text": "बुगिगे! अम बेस ते काजीकेदा।" },
+      "mundari": { "script": "Devanagari", "text": "बेसगे! अम बेस ते काजीकेदा।" }
+    }
+  ]
+}

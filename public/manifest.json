@@ -1,0 +1,19 @@
+{
+  "short_name": "पलाश वाणी",
+  "name": "PALASH Vani - MTB-MLE Primary Education Suite",
+  "description": "AI-Assisted Translation & Curriculum Generation for Ho, Mundari, and Santhali Primary Classrooms",
+  "icons": [
+    {
+      "src": "./logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./",
+  "background_color": "#faf8f5",
+  "theme_color": "#ea580c",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["education", "productivity", "utilities"]
+}

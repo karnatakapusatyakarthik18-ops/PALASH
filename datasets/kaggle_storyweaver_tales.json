@@ -1,0 +1,44 @@
+{
+  "datasetName": "Kaggle Pratham StoryWeaver Multilingual Graded Reader",
+  "source": "Kaggle Pratham StoryWeaver / CC-BY-4.0",
+  "targetAudience": "Primary Grade 1-3 Bilingual Classrooms (Jharkhand)",
+  "storiesCount": 3,
+  "stories": [
+    {
+      "id": "sw_fox_and_grapes",
+      "titleHindi": "चालाक लोमड़ी और मीठे अंगूर",
+      "readingLevel": "Level 1 (Emergent Reader)",
+      "theme": "धैर्य और सच्चाई (Patience)",
+      "santhali": {
+        "title": "ᱪᱟᱞᱟᱠ ᱛᱩᱭᱩ ᱟᱨ ᱦᱮᱲᱮᱢ ᱟᱝᱜᱩᱨ (चालाक तुयु आर हेड़ेम अंगूर)",
+        "summary": "ᱢᱤᱫ ᱨᱮᱸᱜᱮᱡ ᱛᱩᱭᱩ ᱟᱝᱜᱩᱨ ᱵᱟᱜᱟᱱ ᱨᱮ ᱥᱮᱴᱮᱨ ᱮᱱᱟᱭ। (एक भूखा लोमड़ी अंगूर के बगीचे में पहुँचा।)"
+      },
+      "ho": {
+        "title": "चालाक तुयु आर सिबिल अंगूर",
+        "summary": "मि रेंगेः तुयु अंगूर बागीचा रे सेतेरएना।"
+      },
+      "mundari": {
+        "title": "चालाक तुयु आर सिबिल अंगूर",
+        "summary": "मियाद रेंगेः तुयु अंगूर बागीचा रे सेतेरएना।"
+      }
+    },
+    {
+      "id": "sw_sun_and_wind",
+      "titleHindi": "सूरज और हवा की अनोखी प्रतियोगिता",
+      "readingLevel": "Level 2 (Early Reader)",
+      "theme": "विनम्रता की शक्ति (Gentleness over Force)",
+      "santhali": {
+        "title": "ᱥᱤᱧ ᱪᱟᱸᱫᱚ ᱟᱨ ᱦᱚᱭ ᱨᱮᱭᱟᱜ ᱦᱮᱯᱨᱟᱣ (सिंज चांदो आर होय रेयाग हेपराव)",
+        "summary": "ᱦᱚᱭ ᱫᱚ ᱟᱡᱟᱜ ᱫᱟᱲᱮ ᱩᱫᱩᱜ ᱥᱟᱱᱟᱭᱮ ᱠᱟᱱ ᱛᱟᱦᱮᱸᱱᱟ, ᱢᱮᱱᱠᱷᱟᱱ ᱥᱤᱧ ᱪᱟᱸᱫᱚ ᱫᱚ ᱢᱟᱭᱟ ᱛᱮ ᱡᱤᱛᱠᱟᱹᱨ ᱮᱱᱟᱭ।"
+      },
+      "ho": {
+        "title": "सिंगबोंगा आर होयो आः हेपराव",
+        "summary": "होयो आको आः पेड़ेः उदूब सानईताना, मेनदो सिंगबोंगा दया ते जेतकेरेना।"
+      },
+      "mundari": {
+        "title": "सिंगबोंगा आर होयो आः हेपराव",
+        "summary": "होयो आको आः पेड़ेः उदूब सानईताना, मेनदो सिंगबोंगा दया ते जेतकेरेना।"
+      }
+    }
+  ]
+}
