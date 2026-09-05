@@ -2,7 +2,7 @@ import React from 'react';
 import { TribalLanguage } from '../nlp/types';
 import { 
   Mic, BookOpen, FileText, Layers, Sparkles, WifiOff, Cpu, 
-  ArrowRight, Award, Edit3, Headphones, Camera, Radio 
+  ArrowRight, Award, Edit3, Headphones, Camera, Radio, User, GraduationCap, Compass, Database 
 } from 'lucide-react';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -10,9 +10,17 @@ interface HeroIntroProps {
   onSelectTab: (tab: string) => void;
   targetLang: TribalLanguage;
   setTargetLang: (lang: TribalLanguage) => void;
+  userRole: 'all' | 'teacher' | 'student';
+  setUserRole: (role: 'all' | 'teacher' | 'student') => void;
 }
 
-export const HeroIntro: React.FC<HeroIntroProps> = ({ onSelectTab, targetLang, setTargetLang }) => {
+export const HeroIntro: React.FC<HeroIntroProps> = ({ 
+  onSelectTab, 
+  targetLang, 
+  setTargetLang,
+  userRole,
+  setUserRole
+}) => {
   const { themeConfig } = useTheme();
   const allFeatures = [
     {
@@ -22,7 +30,8 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({ onSelectTab, targetLang, s
       icon: Mic,
       gradient: 'from-amber-500 via-orange-500 to-rose-600',
       badge: '<800ms',
-      badgeColor: 'bg-emerald-500 text-white'
+      badgeColor: 'bg-emerald-500 text-white',
+      role: 'all' as const
     },
     {
       id: 'slate',
@@ -31,7 +40,8 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({ onSelectTab, targetLang, s
       icon: Edit3,
       gradient: 'from-emerald-500 via-teal-600 to-green-700',
       badge: 'इंटरैक्टिव स्लेट',
-      badgeColor: 'bg-emerald-600 text-white'
+      badgeColor: 'bg-emerald-600 text-white',
+      role: 'student' as const
     },
     {
       id: 'game',
@@ -40,7 +50,8 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({ onSelectTab, targetLang, s
       icon: Headphones,
       gradient: 'from-fuchsia-500 via-purple-600 to-indigo-700',
       badge: 'FLN गेम',
-      badgeColor: 'bg-purple-600 text-white'
+      badgeColor: 'bg-purple-600 text-white',
+      role: 'student' as const
     },
     {
       id: 'camera',
@@ -49,7 +60,8 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({ onSelectTab, targetLang, s
       icon: Camera,
       gradient: 'from-cyan-500 via-blue-600 to-indigo-700',
       badge: 'कैमरा AI',
-      badgeColor: 'bg-cyan-600 text-white'
+      badgeColor: 'bg-cyan-600 text-white',
+      role: 'student' as const
     },
     {
       id: 'folktale',
@@ -58,54 +70,86 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({ onSelectTab, targetLang, s
       icon: BookOpen,
       gradient: 'from-blue-600 via-indigo-600 to-violet-700',
       badge: 'मातृभाषा कराओके',
-      badgeColor: 'bg-blue-600 text-white'
-    },
-    {
-      id: 'cert',
-      title: '6. शिक्षक भाषा सेतु (Certification)',
-      desc: 'गैर-जनजातीय शिक्षकों हेतु 5-मिनट दैनिक अभ्यास, प्रश्नोत्तरी एवं आधिकारिक प्रमाण पत्र।',
-      icon: Award,
-      gradient: 'from-amber-600 via-orange-600 to-red-600',
-      badge: 'सर्टिफिकेट',
-      badgeColor: 'bg-amber-600 text-white'
-    },
-    {
-      id: 'mesh',
-      title: '7. क्लस्टर मेश सिंक (Offline P2P)',
-      desc: 'शून्य इंटरनेट वाले क्षेत्रों में टैबलेट-टू-टैबलेट स्थानीय हॉटस्पॉट सामग्री साझाकरण।',
-      icon: Radio,
-      gradient: 'from-teal-500 via-emerald-600 to-green-700',
-      badge: '0 KB डेटा',
-      badgeColor: 'bg-teal-600 text-white'
-    },
-    {
-      id: 'customLesson',
-      title: '8. कस्टम पाठ योजना निर्माता (AI)',
-      desc: 'कोई भी हिंदी विषय लिखें — AI स्वतः 30-मिनट का द्विभाषी कक्षा संवाद तैयार करेगा।',
-      icon: Sparkles,
-      gradient: 'from-rose-500 via-pink-600 to-purple-600',
-      badge: 'AI जनरेटर',
-      badgeColor: 'bg-rose-600 text-white'
+      badgeColor: 'bg-blue-600 text-white',
+      role: 'student' as const
     },
     {
       id: 'worksheet',
-      title: '9. निपुण भारत कार्यपुस्तिका जनरेटर',
+      title: '6. निपुण भारत कार्यपुस्तिका जनरेटर',
       desc: 'कक्षा 1-3 के लिए चित्र मिलान, गिनती और अनुरेखण कार्यपत्रक। A4 प्रिंट रेडी।',
       icon: FileText,
       gradient: 'from-orange-500 via-amber-600 to-yellow-600',
       badge: 'NIPUN Bharat',
-      badgeColor: 'bg-orange-600 text-white'
+      badgeColor: 'bg-orange-600 text-white',
+      role: 'teacher' as const
+    },
+    {
+      id: 'customLesson',
+      title: '7. कस्टम पाठ योजना निर्माता (AI)',
+      desc: 'कोई भी हिंदी विषय लिखें — AI स्वतः 30-मिनट का द्विभाषी कक्षा संवाद तैयार करेगा।',
+      icon: Sparkles,
+      gradient: 'from-rose-500 via-pink-600 to-purple-600',
+      badge: 'AI जनरेटर',
+      badgeColor: 'bg-rose-600 text-white',
+      role: 'teacher' as const
     },
     {
       id: 'flashcards',
-      title: '10. 3D सचित्र फ्लैशकार्ड स्टूडियो',
+      title: '8. 3D सचित्र फ्लैशकार्ड स्टूडियो',
       desc: 'कक्षा में बच्चों को चित्र, लिपि और सटीक उच्चारण सिखाने हेतु 3D फ्लिप कार्ड्स।',
       icon: Layers,
       gradient: 'from-violet-600 via-purple-600 to-pink-600',
       badge: '3D फ्लिप',
-      badgeColor: 'bg-violet-600 text-white'
+      badgeColor: 'bg-violet-600 text-white',
+      role: 'student' as const
+    },
+    {
+      id: 'cert',
+      title: '9. शिक्षक भाषा सेतु (Certification)',
+      desc: 'गैर-जनजातीय शिक्षकों हेतु 5-मिनट दैनिक अभ्यास, प्रश्नोत्तरी एवं आधिकारिक प्रमाण पत्र।',
+      icon: Award,
+      gradient: 'from-amber-600 via-orange-600 to-red-600',
+      badge: 'सर्टिफिकेट',
+      badgeColor: 'bg-amber-600 text-white',
+      role: 'teacher' as const
+    },
+    {
+      id: 'mesh',
+      title: '10. क्लस्टर मेश सिंक (Offline P2P)',
+      desc: 'शून्य इंटरनेट वाले क्षेत्रों में टैबलेट-टू-टैबलेट स्थानीय हॉटस्पॉट सामग्री साझाकरण।',
+      icon: Radio,
+      gradient: 'from-teal-500 via-emerald-600 to-green-700',
+      badge: '0 KB डेटा',
+      badgeColor: 'bg-teal-600 text-white',
+      role: 'teacher' as const
+    },
+    {
+      id: 'datasets',
+      title: '11. Kaggle ओपन डेटासेट एक्सप्लोरर',
+      desc: 'संथाली 40 वर्णमाला, NIPUN कक्षा वाक्य एवं StoryWeaver लोककथाओं का पूर्ण डेटा बैंक।',
+      icon: Database,
+      gradient: 'from-blue-700 via-indigo-700 to-slate-900',
+      badge: 'Kaggle Data',
+      badgeColor: 'bg-blue-800 text-white',
+      role: 'teacher' as const
+    },
+    {
+      id: 'text',
+      title: '12. पाठ्यचर्या अनुवाद व स्क्रिप्ट',
+      desc: 'पाठ्यपुस्तकों का द्विभाषी अनुवाद एवं देवनागरी उच्चारण स्क्रिप्ट गाइड।',
+      icon: Compass,
+      gradient: 'from-emerald-600 via-teal-700 to-stone-800',
+      badge: 'FLN गाइड',
+      badgeColor: 'bg-emerald-800 text-white',
+      role: 'teacher' as const
     }
   ];
+
+  const visibleFeatures = allFeatures.filter(f => {
+    if (userRole === 'all') return true;
+    if (f.role === 'all') return true;
+    return f.role === userRole;
+  });
 
   return (
     <div className="space-y-8 mb-8">
@@ -201,26 +245,155 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({ onSelectTab, targetLang, s
               <span className="text-amber-300">सक्रिय:</span>
               <span className="uppercase text-white tracking-wider">{targetLang}</span>
               <span className="text-white/60">•</span>
-              <span className="text-emerald-300">10 इंटरैक्टिव सुविधाएं</span>
+              <span className="text-emerald-300">{allFeatures.length} इंटरैक्टिव सुविधाएं</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Complete 10-Feature Interactive Hub Matrix */}
+      {/* Interactive Role Switcher Hub: Teacher vs Student */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-xl font-black text-slate-800 flex items-center space-x-2">
+              <span>👥</span>
+              <span>कक्षा भूमिका चयन (Select Persona Interface):</span>
+            </h2>
+            <p className="text-xs text-slate-500">
+              शिक्षक अध्यापन उपकरण अथवा छात्र बाल-अध्ययन स्टूडियो में से अपना इंटरफेस चुनें।
+            </p>
+          </div>
+          <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner text-xs font-black shrink-0">
+            <button
+              onClick={() => setUserRole('all')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                userRole === 'all'
+                  ? 'bg-black text-emerald-400 shadow-sm'
+                  : 'text-slate-600 hover:text-black'
+              }`}
+            >
+              🌐 संपूर्ण दृश्य ({allFeatures.length} मॉड्यूल)
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Card 1: Teacher Portal */}
+          <div 
+            onClick={() => setUserRole('teacher')}
+            className={`p-6 rounded-3xl border transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+              userRole === 'teacher'
+                ? 'bg-black text-white border-emerald-500 shadow-2xl ring-4 ring-emerald-500/20 scale-[1.01]'
+                : 'bg-white text-stone-900 border-stone-200 hover:border-emerald-400 shadow-sm hover:shadow-lg'
+            }`}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                  <GraduationCap className="w-6 h-6 text-emerald-400" />
+                </div>
+                <span className={`text-xs font-black px-3 py-1 rounded-full ${
+                  userRole === 'teacher' ? 'bg-emerald-500 text-black' : 'bg-stone-100 text-stone-700'
+                }`}>
+                  {userRole === 'teacher' ? '✓ सक्रिय इंटरफेस' : 'सक्रिय करने हेतु क्लिक करें'}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-xl font-black flex items-center gap-2">
+                  <span>👨‍🏫 शिक्षक अध्यापन केंद्र</span>
+                  <span className="text-xs font-semibold text-emerald-400">(Teacher Portal)</span>
+                </h3>
+                <p className={`text-xs mt-1.5 leading-relaxed ${userRole === 'teacher' ? 'text-stone-300' : 'text-stone-600'}`}>
+                  गैर-जनजातीय प्राथमिक शिक्षकों हेतु: रियल-टाइम ध्वनि अनुवाद, निपुण भारत A4 कार्यपुस्तिका, 30-मिनट पाठ योजनाएं, एवं शिक्षक प्रमाणन।
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {['🎙️ ध्वनि अनुवाद', '📄 कार्यपुस्तिका जनरेटर', '✨ कस्टम पाठ योजना', '🧭 पाठ्यचर्या स्क्रिप्ट', '🏅 शिक्षक सेतु', '📶 मेश सिंक', '📊 Kaggle डेटा'].map((chip, idx) => (
+                  <span key={idx} className={`text-[11px] font-bold px-2.5 py-1 rounded-lg ${
+                    userRole === 'teacher' ? 'bg-white/10 text-emerald-300 border border-emerald-500/20' : 'bg-stone-100 text-stone-700'
+                  }`}>
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className={`pt-4 mt-4 border-t flex items-center justify-between text-xs font-black ${
+              userRole === 'teacher' ? 'border-white/10 text-emerald-400' : 'border-stone-100 text-stone-800'
+            }`}>
+              <span>शिक्षक उपकरण इंटरफेस देखें ({allFeatures.filter(f => f.role === 'teacher' || f.role === 'all').length} टूल्स)</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+
+          {/* Card 2: Student Learning Studio */}
+          <div 
+            onClick={() => setUserRole('student')}
+            className={`p-6 rounded-3xl border transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+              userRole === 'student'
+                ? 'bg-gradient-to-br from-emerald-600 to-teal-800 text-white border-emerald-300 shadow-2xl ring-4 ring-emerald-400/30 scale-[1.01]'
+                : 'bg-white text-stone-900 border-stone-200 hover:border-emerald-400 shadow-sm hover:shadow-lg'
+            }`}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-amber-400/20 text-amber-300 flex items-center justify-center border border-amber-400/30">
+                  <User className="w-6 h-6 text-amber-300" />
+                </div>
+                <span className={`text-xs font-black px-3 py-1 rounded-full ${
+                  userRole === 'student' ? 'bg-amber-300 text-black' : 'bg-stone-100 text-stone-700'
+                }`}>
+                  {userRole === 'student' ? '✓ सक्रिय इंटरफेस' : 'सक्रिय करने हेतु क्लिक करें'}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-xl font-black flex items-center gap-2">
+                  <span>🧒 विद्यार्थी बाल-अध्ययन केंद्र</span>
+                  <span className="text-xs font-semibold text-amber-200">(Student Studio)</span>
+                </h3>
+                <p className={`text-xs mt-1.5 leading-relaxed ${userRole === 'student' ? 'text-emerald-100' : 'text-stone-600'}`}>
+                  जनजातीय बच्चों हेतु: डिजिटल स्लेट (अक्षर अनुरेखण), ध्वनि व चित्र गेम, सचित्र लोककथाएं, 3D फ्लैशकार्ड्स एवं ऑडियो अभ्यास।
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {['✏️ डिजिटल स्लेट', '🎮 फ़ोनिक्स गेम', '📚 सचित्र लोककथाएं', '📸 फोटो AI', '🃏 3D फ्लैशकार्ड्स', '🗣️ छात्र स्व-अध्ययन'].map((chip, idx) => (
+                  <span key={idx} className={`text-[11px] font-bold px-2.5 py-1 rounded-lg ${
+                    userRole === 'student' ? 'bg-white/20 text-amber-200 border border-white/20' : 'bg-stone-100 text-stone-700'
+                  }`}>
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className={`pt-4 mt-4 border-t flex items-center justify-between text-xs font-black ${
+              userRole === 'student' ? 'border-white/10 text-amber-300' : 'border-stone-100 text-stone-800'
+            }`}>
+              <span>विद्यार्थी गतिविधियां इंटरफेस देखें ({allFeatures.filter(f => f.role === 'student' || f.role === 'all').length} गतिविधियां)</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filtered Feature Directory */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-black text-slate-800 flex items-center space-x-2">
             <span>✨</span>
-            <span>पलाश वाणी की सभी 10 प्रमुख सुविधाएं (Complete Feature Directory):</span>
+            <span>
+              {userRole === 'teacher'
+                ? 'शिक्षक अध्यापन उपकरण (Teacher Pedagogical Modules):'
+                : userRole === 'student'
+                ? 'विद्यार्थी बाल-अध्ययन गतिविधियां (Student Learning Activities):'
+                : 'पलाश वाणी की सभी प्रमुख सुविधाएं (Complete Feature Directory):'}
+            </span>
           </h2>
           <span className="text-xs font-bold text-slate-500">
-            किसी भी कार्ड पर क्लिक करके सीधे सुविधा खोलें ➔
+            कुल {visibleFeatures.length} मॉड्यूल उपलब्ध • क्लिक करके सीधे खोलें ➔
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {allFeatures.map((feat) => {
+          {visibleFeatures.map((feat) => {
             const Icon = feat.icon;
             return (
               <div

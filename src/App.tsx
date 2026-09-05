@@ -18,11 +18,14 @@ import { OfflineDiagnostics } from './components/OfflineDiagnostics';
 import { DatasetExplorer } from './components/DatasetExplorer';
 import { useTheme } from './theme/ThemeContext';
 
+export type UserRole = 'all' | 'teacher' | 'student';
+
 export const App: React.FC = () => {
   const { themeConfig } = useTheme();
   const [currentTab, setCurrentTab] = useState<string>('home');
   const [targetLang, setTargetLang] = useState<TribalLanguage>('santhali');
   const [isOffline, setIsOffline] = useState<boolean>(true);
+  const [userRole, setUserRole] = useState<UserRole>('all');
 
   return (
     <div className={`min-h-screen bg-gradient-to-b ${themeConfig.pageBackground} flex flex-col font-sans selection:bg-emerald-400 selection:text-black transition-colors duration-300 ${themeConfig.isDark ? 'dark text-stone-100' : 'text-stone-900'}`}>
@@ -34,6 +37,8 @@ export const App: React.FC = () => {
         setTargetLang={setTargetLang}
         isOffline={isOffline}
         setIsOffline={setIsOffline}
+        userRole={userRole}
+        setUserRole={setUserRole}
       />
 
       {/* Main Workspace Container */}
@@ -43,6 +48,8 @@ export const App: React.FC = () => {
             onSelectTab={(tab) => setCurrentTab(tab)}
             targetLang={targetLang}
             setTargetLang={setTargetLang}
+            userRole={userRole}
+            setUserRole={setUserRole}
           />
         )}
         {currentTab === 'v2v' && <VoiceTranslator targetLang={targetLang} />}

@@ -3,7 +3,8 @@ import { TribalLanguage } from '../nlp/types';
 import { PalashPhoneticTTS } from '../audio/phoneticSynth';
 import { 
   Wifi, WifiOff, Cpu, BookOpen, Layers, Mic, FileText, Sparkles, 
-  Home, Volume2, Edit3, Headphones, Camera, Award, Radio, Compass, Database, Palette 
+  Home, Volume2, Edit3, Headphones, Camera, Award, Radio, Compass, Database, Palette,
+  User, GraduationCap
 } from 'lucide-react';
 import { useTheme, THEMES, ThemeMode } from '../theme/ThemeContext';
 
@@ -14,6 +15,8 @@ interface NavbarProps {
   setTargetLang: (lang: TribalLanguage) => void;
   isOffline: boolean;
   setIsOffline: (offline: boolean) => void;
+  userRole: 'all' | 'teacher' | 'student';
+  setUserRole: (role: 'all' | 'teacher' | 'student') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -22,7 +25,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   targetLang,
   setTargetLang,
   isOffline,
-  setIsOffline
+  setIsOffline,
+  userRole,
+  setUserRole
 }) => {
   const { theme, themeConfig, setTheme } = useTheme();
   const [testedAudio, setTestedAudio] = useState(false);
@@ -34,22 +39,30 @@ export const Navbar: React.FC<NavbarProps> = ({
     mundari: { name: 'मुंडारी', script: 'देवनागरी (Mundari)' }
   };
 
-  const tabs = [
-    { id: 'home', label: 'होम', icon: Home },
-    { id: 'v2v', label: 'ध्वनि अनुवाद', icon: Mic, badge: '<800ms' },
-    { id: 'slate', label: 'डिजिटल स्लेट', icon: Edit3, badge: 'नया' },
-    { id: 'game', label: 'फ़ोनिक्स गेम', icon: Headphones, badge: 'गेम' },
-    { id: 'camera', label: 'फोटो पहचानो', icon: Camera, badge: 'AI' },
-    { id: 'folktale', label: 'लोककथाएं', icon: BookOpen },
-    { id: 'cert', label: 'शिक्षक सेतु', icon: Award, badge: 'सर्टिफिकेट' },
-    { id: 'mesh', label: 'मेश सिंक', icon: Radio, badge: 'P2P' },
-    { id: 'customLesson', label: 'कस्टम पाठ', icon: Sparkles },
-    { id: 'worksheet', label: 'कार्यपुस्तिका', icon: FileText, badge: 'NIPUN' },
-    { id: 'flashcards', label: 'फ्लैशकार्ड्स', icon: Layers },
-    { id: 'datasets', label: 'Kaggle डेटासेट', icon: Database, badge: 'Data' },
-    { id: 'text', label: 'पाठ्यचर्या', icon: Compass },
-    { id: 'diagnostics', label: 'टैबलेट स्थिति', icon: Cpu }
+  const allTabs: Array<{ id: string; label: string; icon: any; badge?: string; role: 'all' | 'teacher' | 'student' }> = [
+    { id: 'home', label: 'होम', icon: Home, role: 'all' },
+    // Teacher & Core
+    { id: 'v2v', label: 'ध्वनि अनुवाद', icon: Mic, badge: '<800ms', role: 'all' },
+    { id: 'worksheet', label: 'कार्यपुस्तिका', icon: FileText, badge: 'NIPUN', role: 'teacher' },
+    { id: 'customLesson', label: 'कस्टम पाठ', icon: Sparkles, role: 'teacher' },
+    { id: 'text', label: 'पाठ्यचर्या', icon: Compass, role: 'teacher' },
+    { id: 'cert', label: 'शिक्षक सेतु', icon: Award, badge: 'सर्टिफिकेट', role: 'teacher' },
+    { id: 'mesh', label: 'मेश सिंक', icon: Radio, badge: 'P2P', role: 'teacher' },
+    { id: 'datasets', label: 'Kaggle डेटासेट', icon: Database, badge: 'Data', role: 'teacher' },
+    { id: 'diagnostics', label: 'टैबलेट स्थिति', icon: Cpu, role: 'teacher' },
+    // Student Activities
+    { id: 'slate', label: 'डिजिटल स्लेट', icon: Edit3, badge: 'नया', role: 'student' },
+    { id: 'game', label: 'फ़ोनिक्स गेम', icon: Headphones, badge: 'गेम', role: 'student' },
+    { id: 'camera', label: 'फोटो पहचानो', icon: Camera, badge: 'AI', role: 'student' },
+    { id: 'folktale', label: 'लोककथाएं', icon: BookOpen, role: 'student' },
+    { id: 'flashcards', label: 'फ्लैशकार्ड्स', icon: Layers, role: 'student' }
   ];
+
+  const visibleTabs = allTabs.filter(tab => {
+    if (userRole === 'all') return true;
+    if (tab.role === 'all') return true;
+    return tab.role === userRole;
+  });
 
   const handleTestSpeaker = () => {
     setTestedAudio(true);
@@ -170,32 +183,89 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Language Selection & Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 py-2 flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Language Selector */}
-        <div className="flex items-center space-x-2 w-full md:w-auto shrink-0">
-          <span className="text-xs font-black text-slate-500 uppercase tracking-wider">लक्षित भाषा:</span>
-          <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
-            {(['santhali', 'ho', 'mundari'] as TribalLanguage[]).map((lang) => (
+      {/* Language Selection & Role Navigation Bar */}
+      <div className="max-w-7xl mx-auto px-4 py-2 flex flex-col lg:flex-row items-center justify-between gap-3">
+        {/* Left Side: Language Selector + Role Interface Switcher */}
+        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto shrink-0">
+          {/* Language Selector */}
+          <div className="flex items-center space-x-1.5 shrink-0">
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">भाषा:</span>
+            <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+              {(['santhali', 'ho', 'mundari'] as TribalLanguage[]).map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => setTargetLang(lang)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all flex flex-col items-center ${
+                    targetLang === lang
+                      ? `${themeConfig.activeNavBg} scale-105`
+                      : 'text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <span>{languageLabels[lang].name}</span>
+                  <span className="text-[9px] opacity-85">{languageLabels[lang].script}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Role Interface Switcher: Teacher vs Student vs All */}
+          <div className="flex items-center space-x-1.5 shrink-0">
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">इंटरफेस:</span>
+            <div className="inline-flex bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-inner">
               <button
-                key={lang}
-                onClick={() => setTargetLang(lang)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex flex-col items-center ${
-                  targetLang === lang
-                    ? `${themeConfig.activeNavBg} scale-105`
-                    : 'text-slate-700 hover:bg-slate-200'
+                onClick={() => {
+                  setUserRole('teacher');
+                  if (['slate', 'game', 'camera', 'folktale', 'flashcards'].includes(currentTab)) {
+                    setCurrentTab('v2v');
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center space-x-1.5 ${
+                  userRole === 'teacher'
+                    ? 'bg-black text-emerald-400 border border-emerald-400 shadow-md ring-2 ring-emerald-400/20 scale-105'
+                    : 'text-stone-600 hover:bg-stone-200'
                 }`}
+                title="शिक्षक अध्यापन उपकरण (Teacher Mode)"
               >
-                <span>{languageLabels[lang].name}</span>
-                <span className="text-[10px] opacity-85">{languageLabels[lang].script}</span>
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>👨‍🏫 शिक्षक</span>
               </button>
-            ))}
+
+              <button
+                onClick={() => {
+                  setUserRole('student');
+                  if (['worksheet', 'customLesson', 'text', 'cert', 'mesh', 'datasets', 'diagnostics'].includes(currentTab)) {
+                    setCurrentTab('slate');
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center space-x-1.5 ${
+                  userRole === 'student'
+                    ? 'bg-emerald-500 text-black border border-emerald-400 shadow-md ring-2 ring-emerald-400/20 scale-105'
+                    : 'text-stone-600 hover:bg-stone-200'
+                }`}
+                title="छात्र खेल व स्व-अध्ययन (Student Mode)"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>🧒 विद्यार्थी</span>
+              </button>
+
+              <button
+                onClick={() => setUserRole('all')}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  userRole === 'all'
+                    ? 'bg-stone-800 text-white shadow-sm'
+                    : 'text-stone-500 hover:bg-stone-200'
+                }`}
+                title="सभी 14 मॉड्यूल देखें (Master View)"
+              >
+                <span>🌐 सभी</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Feature Navigation Tabs */}
-        <nav className="flex items-center space-x-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
-          {tabs.map((tab) => {
+        <nav className="flex items-center space-x-1.5 overflow-x-auto w-full lg:w-auto pb-1 lg:pb-0 scrollbar-none">
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const active = currentTab === tab.id;
             return (
