@@ -79,14 +79,27 @@ export class VoiceManager {
     this.onStatusCallback = onStatus;
   }
 
-  public startListening() {
+  private micLang: string = 'en-IN';
+
+  public setMicLanguage(lang: string) {
+    this.micLang = lang;
+    if (this.recognition) {
+      this.recognition.lang = lang;
+    }
+  }
+
+  public getMicLanguage(): string {
+    return this.micLang;
+  }
+
+  public startListening(customLang?: string) {
     if (!this.recognition) {
       this.onStatusCallback?.({ listening: false, error: 'SpeechRecognition not supported in this browser environment.' });
       return;
     }
 
     try {
-      this.recognition.lang = 'hi-IN';
+      this.recognition.lang = customLang || this.micLang || 'en-IN';
       this.speechStartTime = performance.now();
       this.recognition.start();
     } catch (e) {

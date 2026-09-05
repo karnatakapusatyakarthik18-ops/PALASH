@@ -1,5 +1,5 @@
 export type TribalLanguage = 'santhali' | 'ho' | 'mundari';
-export type LanguageCode = TribalLanguage | 'hindi';
+export type LanguageCode = TribalLanguage | 'hindi' | 'english';
 
 export type ScriptType = 'olchiki' | 'warangchiti' | 'devanagari' | 'latin';
 

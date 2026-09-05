@@ -57,6 +57,32 @@ assert(revSan.hindiText === 'पानी', 'Reverse translation of ᱫᱟᱜ (d
 const revMun = PalashNLPTranslator.translateTribalToHindi('पोथी', 'mundari');
 assert(revMun.hindiText.includes('किताब') || revMun.original === 'पोथी', 'Reverse translation of Mundari "पोथी"', revMun);
 
+// Test 8: English Classroom Mic Command "Open your books" -> Santhali Ol Chiki
+const enOpen = PalashNLPTranslator.translate('Open your books', 'santhali');
+assert(enOpen.targetText.includes('ᱯᱳᱛᱷᱤ'), 'English "Open your books" translates to Ol Chiki ᱯᱳᱛᱷᱤ', enOpen);
+assert(enOpen.devanagariPhonetic.includes('पोथी'), 'English "Open your books" has Devanagari phonetic "पोथी"', enOpen);
+assert(enOpen.englishPhonetic.toLowerCase().includes('pothi'), 'English "Open your books" has phonetic "pothi"', enOpen);
+
+// Test 9: English Mic Command "Sit down" -> Ho
+const enSit = PalashNLPTranslator.translate('Sit down', 'ho');
+assert(enSit.devanagariPhonetic.includes('दुब'), 'English "Sit down" translates to Ho "दुब/दुबेन"', enSit);
+
+// Test 10: English Mic Command "Stand up" -> Mundari
+const enStand = PalashNLPTranslator.translate('Stand up', 'mundari');
+assert(enStand.devanagariPhonetic.includes('तिंगुन'), 'English "Stand up" translates to Mundari "तिंगुनमे"', enStand);
+
+// Test 11: English Question "What is this?" -> Santhali
+const enWhat = PalashNLPTranslator.translate('What is this?', 'santhali');
+assert(enWhat.targetText.includes('ᱪᱮᱫ'), 'English "What is this?" translates to Ol Chiki ᱪᱮᱫ', enWhat);
+
+// Test 12: English Mic Command "Drink water" -> Santhali
+const enWater = PalashNLPTranslator.translate('Drink water', 'santhali');
+assert(enWater.targetText.includes('ᱫᱟᱜ'), 'English "Drink water" translates to Ol Chiki ᱫᱟᱜ', enWater);
+
+// Test 13: English Sentence "This is a tree" -> Santhali
+const enTree = PalashNLPTranslator.translate('This is a tree', 'santhali');
+assert(enTree.targetText.includes('ᱫᱟᱨᱮ') && enTree.targetText.includes('ᱠᱟᱱᱟ'), 'English "This is a tree" translates to Ol Chiki ᱫᱟᱨᱮ + ᱠᱟᱱᱟ', enTree);
+
 console.log("\n-------------------------------------------------");
 console.log(`Verification Summary: ${passed} / ${total} Tests Passed (${Math.round(passed/total*100)}%)`);
 console.log("-------------------------------------------------");

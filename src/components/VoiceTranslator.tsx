@@ -24,6 +24,7 @@ interface StudentPrompt {
 export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) => {
   const { themeConfig } = useTheme();
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('teacher_to_student');
+  const [micLang, setMicLang] = useState<'en-IN' | 'hi-IN'>('en-IN');
   const [isListening, setIsListening] = useState(false);
   const [lastLatencyMs, setLastLatencyMs] = useState<number | null>(320);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -51,6 +52,7 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
     const vm = new VoiceManager();
     vm.setLanguage(targetLang);
     vm.setMode(voiceMode);
+    vm.setMicLanguage(micLang);
     vm.setCallbacks(
       (result) => {
         setExchanges((prev) => [result, ...prev]);
@@ -63,23 +65,23 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
       }
     );
     voiceManagerRef.current = vm;
-  }, [targetLang, voiceMode]);
+  }, [targetLang, voiceMode, micLang]);
 
   const toggleListening = () => {
     setErrorMessage(null);
     if (isListening) {
       voiceManagerRef.current?.stopListening();
     } else {
-      voiceManagerRef.current?.startListening();
+      voiceManagerRef.current?.startListening(micLang);
     }
   };
 
-  // Teacher mode prompt (Hindi -> Tribal)
-  const handleTeacherPrompt = async (hindiText: string) => {
+  // Teacher mode prompt (Hindi or English -> Tribal)
+  const handleTeacherPrompt = async (promptText: string) => {
     setErrorMessage(null);
     setIsPlayingAudio(true);
     const start = performance.now();
-    await voiceManagerRef.current?.processSpokenText(hindiText, start);
+    await voiceManagerRef.current?.processSpokenText(promptText, start);
     setIsPlayingAudio(false);
   };
 
@@ -159,14 +161,14 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   };
 
   const teacherQuickPrompts = [
-    'नमस्ते बच्चों',
-    'बैठ जाओ',
-    'खड़े हो जाओ',
-    'अपनी किताब खोलो',
-    'ताली बजाओ',
-    'यह क्या है?',
-    'पानी पियो',
-    'बहुत अच्छा!'
+    { text: 'अपनी किताब खोलो', label: 'अपनी किताब खोलो (Open books)' },
+    { text: 'बैठ जाओ', label: 'बैठ जाओ (Sit down)' },
+    { text: 'खड़े हो जाओ', label: 'खड़े हो जाओ (Stand up)' },
+    { text: 'ताली बजाओ', label: 'ताली बजाओ (Clap hands)' },
+    { text: 'यह क्या है?', label: 'यह क्या है? (What is this?)' },
+    { text: 'पानी पियो', label: 'पानी पियो (Drink water)' },
+    { text: 'नमस्ते बच्चों', label: 'नमस्ते बच्चों (Hello)' },
+    { text: 'बहुत अच्छा!', label: 'बहुत अच्छा! (Very good)' }
   ];
 
   const getStudentPrompts = (): StudentPrompt[] => {
@@ -298,8 +300,42 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
           </div>
         )}
 
-        {/* Microphone Big Push Button */}
+        {/* Microphone Big Push Button & Language Selector */}
         <div className="flex flex-col items-center justify-center space-y-3">
+          {voiceMode === 'teacher_to_student' && (
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-1">
+              <span className="text-xs font-bold text-stone-500">माइक इनपुट भाषा:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setMicLang('en-IN');
+                  voiceManagerRef.current?.setMicLanguage('en-IN');
+                }}
+                className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
+                  micLang === 'en-IN'
+                    ? 'bg-black text-emerald-400 border border-emerald-400 shadow-md ring-2 ring-emerald-400/30'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                🌐 English ("Open your books")
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMicLang('hi-IN');
+                  voiceManagerRef.current?.setMicLanguage('hi-IN');
+                }}
+                className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
+                  micLang === 'hi-IN'
+                    ? 'bg-black text-emerald-400 border border-emerald-400 shadow-md ring-2 ring-emerald-400/30'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                🇮🇳 हिंदी ("किताब खोलो")
+              </button>
+            </div>
+          )}
+
           <button
             onClick={toggleListening}
             className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${
@@ -314,7 +350,11 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
             {isListening ? <MicOff className="w-10 h-10" /> : <Mic className="w-10 h-10" />}
           </button>
           <div className="flex items-center space-x-2 text-xs font-bold text-stone-600">
-            <span>{isListening ? 'माइक चालू है • रुकने के लिए पुनः दबाएँ' : 'माइक दबाकर बोलें'}</span>
+            <span>
+              {isListening 
+                ? `माइक चालू है (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) • रुकने के लिए पुनः दबाएँ` 
+                : `माइक दबाकर बोलें (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) ➔ जनजातीय भाषा में अनुवाद होगा`}
+            </span>
           </div>
           {errorMessage && (
             <p className="text-xs text-amber-800 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
@@ -333,10 +373,10 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
               {teacherQuickPrompts.map((prompt, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleTeacherPrompt(prompt)}
+                  onClick={() => handleTeacherPrompt(prompt.text)}
                   className="bg-stone-50 hover:bg-emerald-50 text-stone-800 hover:text-emerald-900 border border-stone-200 hover:border-emerald-300 px-3.5 py-2 rounded-xl text-xs font-black transition-all hover:scale-105 shadow-sm active:scale-95 flex items-center space-x-1.5"
                 >
-                  <span>{prompt}</span>
+                  <span>{prompt.label}</span>
                   <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
                 </button>
               ))}
@@ -391,7 +431,7 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
             type="text"
             value={manualInput}
             onChange={(e) => setManualInput(e.target.value)}
-            placeholder={voiceMode === 'teacher_to_student' ? 'या यहाँ हिंदी वाक्य लिखें (उदा. बैठ जाओ)...' : 'या यहाँ मातृभाषा शब्द लिखें (उदा. ᱫᱟᱜ / पानी)...'}
+            placeholder={voiceMode === 'teacher_to_student' ? 'यहाँ हिंदी या English लिखें (उदा. "Open your books", "किताब खोलो", "Sit down")...' : 'या यहाँ मातृभाषा शब्द लिखें (उदा. ᱫᱟᱜ / पानी)...'}
             className="flex-1 px-4 py-2.5 text-xs md:text-sm border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
           />
           <button
