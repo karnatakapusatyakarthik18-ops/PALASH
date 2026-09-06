@@ -264,52 +264,6 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
         </div>
       </div>
 
-      {/* Language Priority Banner (Hindi Primary vs English Secondary) */}
-      <div className="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center space-x-3 text-stone-800 text-center sm:text-left">
-          <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-            <Globe className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-sm font-black text-stone-900">
-              {appLang === 'hi' 
-                ? 'एप्लिकेशन भाषा (Operating Language): हिन्दी (मुख्य भाषा) एवं English (सहायक भाषा)'
-                : 'Application Language: Hindi (Primary SIH Focus) & English (Secondary Language)'}
-            </h3>
-            <p className="text-xs text-stone-500">
-              {appLang === 'hi'
-                ? 'समस्या कथन के अनुसार हिन्दी मुख्य भाषा है। संकाय एवं विद्यार्थियों हेतु अंग्रेज़ी भी पूर्णतः उपलब्ध है।'
-                : 'Hindi is the primary language aligned with the SIH problem statement. English is provided for faculty and students.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="inline-flex bg-stone-100 p-1 rounded-xl border border-stone-200 shrink-0">
-          <button
-            onClick={() => setAppLang('hi')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center space-x-1.5 ${
-              appLang === 'hi'
-                ? 'bg-orange-600 text-white shadow-md'
-                : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <span>🇮🇳</span>
-            <span>हिन्दी (Primary)</span>
-          </button>
-          <button
-            onClick={() => setAppLang('en')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center space-x-1.5 ${
-              appLang === 'en'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <span>🌐</span>
-            <span>English (Secondary)</span>
-          </button>
-        </div>
-      </div>
-
       {/* Interactive Role Switcher Hub: Teacher vs Student */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">

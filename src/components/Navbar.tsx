@@ -113,33 +113,31 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Status Controls */}
           <div className="flex flex-wrap items-center space-x-2 text-xs">
-            {/* Primary Language Switcher: Hindi (Primary) vs English (Secondary) */}
+            {/* Language Switcher: Hindi vs English */}
             <div className="inline-flex bg-black/25 backdrop-blur-md p-0.5 rounded-xl border border-white/20 shadow-inner">
               <button
                 onClick={() => setAppLang('hi')}
-                className={`px-2.5 py-1 rounded-lg font-black text-xs transition-all flex items-center space-x-1 ${
+                className={`px-3 py-1 rounded-lg font-black text-xs transition-all flex items-center space-x-1.5 ${
                   appLang === 'hi'
                     ? 'bg-amber-400 text-stone-950 shadow-md ring-1 ring-amber-300 scale-105'
                     : 'text-stone-200 hover:text-white'
                 }`}
-                title="हिन्दी (मुख्य भाषा - SIH Focus)"
+                title="हिन्दी"
               >
                 <span>🇮🇳</span>
                 <span>हिन्दी</span>
-                <span className="text-[9px] opacity-75 font-normal hidden md:inline">(Primary)</span>
               </button>
               <button
                 onClick={() => setAppLang('en')}
-                className={`px-2.5 py-1 rounded-lg font-black text-xs transition-all flex items-center space-x-1 ${
+                className={`px-3 py-1 rounded-lg font-black text-xs transition-all flex items-center space-x-1.5 ${
                   appLang === 'en'
                     ? 'bg-amber-400 text-stone-950 shadow-md ring-1 ring-amber-300 scale-105'
                     : 'text-stone-200 hover:text-white'
                 }`}
-                title="English (Secondary Language - For Faculty & Students)"
+                title="English"
               >
                 <span>🌐</span>
                 <span>English</span>
-                <span className="text-[9px] opacity-75 font-normal hidden md:inline">(Secondary)</span>
               </button>
             </div>
 

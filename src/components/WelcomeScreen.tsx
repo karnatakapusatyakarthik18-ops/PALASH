@@ -128,11 +128,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
                 <div className="pt-3 mt-3 border-t border-stone-200 text-[11px] font-bold text-emerald-700 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>समस्या कथन के अनुसार मुख्य अध्यापन माध्यम</span>
+                  <span>{appLang === 'hi' ? 'प्राथमिक कक्षा अध्यापन एवं संवाद' : 'Primary classroom teaching & communication'}</span>
                 </div>
               </div>
 
-              {/* Option 2: English (Secondary) */}
+              {/* Option 2: English */}
               <div 
                 onClick={() => setAppLang('en')}
                 className={`cursor-pointer rounded-2xl p-4 sm:p-5 border-2 transition-all relative flex flex-col justify-between ${
@@ -163,7 +163,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
                 <div className="pt-3 mt-3 border-t border-stone-200 text-[11px] font-bold text-blue-700 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Helpful for faculty, administrators & advanced students</span>
+                  <span>{appLang === 'hi' ? 'द्विभाषी अध्ययन एवं अभ्यास' : 'Bilingual learning & practice'}</span>
                 </div>
               </div>
             </div>
