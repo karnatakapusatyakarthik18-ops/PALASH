@@ -3,7 +3,7 @@
 ### Supporting Ho, Mundari, and Santhali Primary Classrooms
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](https://opensource.org/licenses/MIT)
-[![Tests: 100% Passed](https://img.shields.io/badge/Tests-13%2F13%20Passed-brightgreen.svg)]()
+[![Tests: 100% Passed](https://img.shields.io/badge/Tests-34%2F34%20Passed-brightgreen.svg)]()
 [![RAM Footprint: ~68 MB](https://img.shields.io/badge/Tablet%20RAM-~68%20MB%20%2F%202GB-blue.svg)]()
 [![Offline: 100% PWA](https://img.shields.io/badge/Network-100%25%20Offline%20Ready-emerald.svg)]()
 
@@ -90,7 +90,40 @@ Jharkhand's **PALASH (Promotion of Appropriate Language and Academic Skills for 
   4. *Review & Praise (5 min)*
 - Provides exact Hindi prompt $\leftrightarrow$ exact tribal phrase to say $\leftrightarrow$ expected student response $\leftrightarrow$ pedagogical advice.
 
-### ⚙️ 6. 100% Offline Tablet Diagnostics ($\le$ 2GB RAM)
+### ✍️ 6. Interactive Digital Slate (Letter Tracing)
+- Touch/mouse canvas enabling tribal children to trace authentic **Ol Chiki** (`ᱚ`, `ᱛ`, `ᱜ`, `ᱝ`, `ᱞ`) and **Warang Chiti** alphabets.
+- Real-time mathematical pixel stroke accuracy scoring (0–100%) with audio praise.
+
+### 🔊 7. Phonics Ear-Training Sound Game
+- Gamified audio matching native tribal pronunciations to corresponding pictures.
+- Built for Balvatika and Grade 1 foundational literacy with streak counters and sound effects.
+
+### 📸 8. Visual Camera FLN AI (On-Device Edge Vision)
+- **100% Offline Object Recognition**: Quantized MobileNet CNN running locally in browser memory via WebGL/WASM in `<150ms`.
+- Points at classroom items (book, tree, water, flower, fish, dog) and automatically speaks their tribal names.
+- Zero cloud dependency, zero internet packets sent, complete child privacy.
+
+### 📖 9. Illustrated Folktales & Rhymes (Karaoke Player)
+- Authentic Jharkhand folklore (*Marang Buru, Karam Festival, Sarhul*) with sentence-by-sentence synchronized audio playback.
+- Dual-script Ol Chiki, Devanagari phonetics, and Hindi translation.
+
+### 📡 10. Cluster Mesh Sync (P2P Local Hotspot)
+- Zero-internet tablet-to-tablet sharing over local Wi-Fi hotspot for remote forest schools.
+- Synchronizes custom lesson plans, student worksheets, and audio recordings between teacher devices.
+
+### 🏅 11. Teacher Language Bridge & Certification
+- Daily 5-minute interactive micro-learning modules for non-tribal teachers.
+- Interactive quizzes and downloadable offline verifiable certificates.
+
+### 👥 12. Zero-Login Role-Based Interface Switcher
+- **👨‍🏫 शिक्षक मंच (Teacher Portal)**: Voice translator, A4 worksheets, 30-min lesson plans, mesh sync.
+- **🧒 विद्यार्थी मंच (Student Studio)**: Digital slate, phonics games, folktales karaoke, camera AI.
+- **🌐 संपूर्ण दृश्य (Master View)**: All 14 modules unified for evaluators and headmasters.
+
+### 🌐 13. Bilingual UI System
+- 1-click toggle between **हिन्दी (Hindi)** and **English** for classroom ergonomics and faculty convenience.
+
+### ⚙️ 14. 100% Offline Tablet Diagnostics (≤ 2GB RAM)
 - Real-time memory monitor: **~68 MB RAM usage** (only ~3.4% of 2GB RAM budget).
 - Total storage footprint: **< 4 MB** (CacheStorage + IndexedDB).
 - Native Web Audio API Klatt Formant Acoustic Synthesizer for zero-network voice playback.
@@ -163,9 +196,30 @@ npm run dev
 [PASS] Santhali "यह एक पेड़ है" contains "दारे" and "काना"
 [PASS] Reverse translation of ᱫᱟᱜ (daq) to Hindi is "पानी"
 [PASS] Reverse translation of Mundari "पोथी"
+[PASS] English "Open your books" translates to Ol Chiki ᱯᱳᱛᱷᱤ
+[PASS] English "Open your books" has Devanagari phonetic "पोथी"
+[PASS] English "Open your books" has phonetic "pothi"
+[PASS] English "Sit down" translates to Ho "दुब/दुबेन"
+[PASS] English "Stand up" translates to Mundari "तिंगुनमे"
+[PASS] English "What is this?" translates to Ol Chiki ᱪᱮᱫ
+[PASS] English "Drink water" translates to Ol Chiki ᱫᱟᱜ
+[PASS] English "This is a tree" translates to Ol Chiki ᱫᱟᱨᱮ + ᱠᱟᱱᱟ
+[PASS] Lesson 1 translates to authentic Ol Chiki script
+[PASS] Lesson 1 targetText has zero untranslated Hindi verbs
+[PASS] Lesson 1 devanagariPhonetic speaks tribal phonetics
+[PASS] Lesson 1 devanagariPhonetic does not echo Hindi "पढ़ेंगे"
+[PASS] Lesson 2 contains Ol Chiki pothi, nyel or aanjom
+[PASS] Lesson 2 devanagariPhonetic does not echo Hindi "देखो"
+[PASS] Lesson 3 contains Ol Chiki gai and towa
+[PASS] Lesson 3 speaks Santhali "गई" and "तोवा"
+[PASS] Lesson 4 contains Ol Chiki dare and jo
+[PASS] Lesson 4 speaks Santhali "दारे" and "जो"
+[PASS] Ho lesson contains "होनको" and "पइड़ाव/कहाणी"
+[PASS] Mundari lesson contains "होनको" and "पड़ाव/कहाणी"
+[PASS] Lesson 5 contains Ol Chiki asra or dinam
 
 -------------------------------------------------
-Verification Summary: 13 / 13 Tests Passed (100%)
+Verification Summary: 34 / 34 Tests Passed (100%)
 -------------------------------------------------
 ```
 
