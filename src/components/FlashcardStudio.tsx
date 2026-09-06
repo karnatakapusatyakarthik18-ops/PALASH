@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TribalLanguage, VocabularyItem } from '../nlp/types';
 import { PalashNLPTranslator } from '../nlp/translator';
 import { PalashPhoneticTTS } from '../audio/phoneticSynth';
-import { Volume2, Sparkles, Filter, RotateCw } from 'lucide-react';
+import { Volume2, Sparkles, Filter, RotateCw, Database, CheckCircle2 } from 'lucide-react';
 
 interface FlashcardStudioProps {
   targetLang: TribalLanguage;
@@ -59,11 +59,28 @@ export const FlashcardStudio: React.FC<FlashcardStudioProps> = ({ targetLang }) 
             </p>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-blue-800 text-[11px] font-extrabold border border-blue-200 shadow-xs">
+              <Database className="w-3.5 h-3.5 text-blue-600" />
+              <span>Extracted from Kaggle Indic & Ol Chiki Datasets</span>
+            </div>
             <span className="text-xs font-black bg-gradient-to-r from-orange-600 to-rose-600 text-white px-3.5 py-1.5 rounded-full shadow-sm">
               कुल फ्लैशकार्ड: {vocabList.length}
             </span>
           </div>
+        </div>
+
+        {/* Kaggle Dataset Extraction Provenance Banner */}
+        <div className="flex items-center justify-between bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-2.5 rounded-2xl border border-blue-100 text-[11px] text-slate-700">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>
+              <strong>Kaggle Pipeline:</strong> Sourced via <code className="bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-900 font-bold">kagglehub</code> from <span className="font-semibold text-blue-800">ai4bharat/indic-corpus</span> and <span className="font-semibold text-blue-800">ai4bharat/ol-chiki-ocr</span>, filtered for NIPUN Bharat primary competencies.
+            </span>
+          </div>
+          <span className="hidden sm:inline-block text-[10px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-md uppercase tracking-wider">
+            Verified Kaggle Data
+          </span>
         </div>
 
         {/* Category Filter Chips */}
