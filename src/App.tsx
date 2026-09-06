@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TribalLanguage } from './nlp/types';
+import { AppLanguage, translations } from './i18n/translations';
 import { Navbar } from './components/Navbar';
 import { HeroIntro } from './components/HeroIntro';
 import { VoiceTranslator } from './components/VoiceTranslator';
@@ -16,6 +17,7 @@ import { FlashcardStudio } from './components/FlashcardStudio';
 import { LessonScriptViewer } from './components/LessonScriptViewer';
 import { OfflineDiagnostics } from './components/OfflineDiagnostics';
 import { DatasetExplorer } from './components/DatasetExplorer';
+import { WelcomeScreen } from './components/WelcomeScreen';
 import { useTheme } from './theme/ThemeContext';
 
 export type UserRole = 'all' | 'teacher' | 'student';
@@ -26,9 +28,25 @@ export const App: React.FC = () => {
   const [targetLang, setTargetLang] = useState<TribalLanguage>('santhali');
   const [isOffline, setIsOffline] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<UserRole>('all');
+  const [appLang, setAppLang] = useState<AppLanguage>('hi'); // Hindi is primary by default
+  const [showWelcome, setShowWelcome] = useState<boolean>(true); // Welcoming intro page on launch
+
+  const t = translations[appLang];
 
   return (
     <div className={`min-h-screen bg-gradient-to-b ${themeConfig.pageBackground} flex flex-col font-sans selection:bg-emerald-400 selection:text-black transition-colors duration-300 ${themeConfig.isDark ? 'dark text-stone-100' : 'text-stone-900'}`}>
+      {/* Interactive Welcome / Intro Modal Screen */}
+      <WelcomeScreen
+        isOpen={showWelcome}
+        onClose={() => setShowWelcome(false)}
+        appLang={appLang}
+        setAppLang={setAppLang}
+        userRole={userRole}
+        setUserRole={setUserRole}
+        targetLang={targetLang}
+        setTargetLang={setTargetLang}
+      />
+
       {/* Top Navigation */}
       <Navbar
         currentTab={currentTab}
@@ -39,6 +57,9 @@ export const App: React.FC = () => {
         setIsOffline={setIsOffline}
         userRole={userRole}
         setUserRole={setUserRole}
+        appLang={appLang}
+        setAppLang={setAppLang}
+        onOpenWelcome={() => setShowWelcome(true)}
       />
 
       {/* Main Workspace Container */}
@@ -50,6 +71,9 @@ export const App: React.FC = () => {
             setTargetLang={setTargetLang}
             userRole={userRole}
             setUserRole={setUserRole}
+            appLang={appLang}
+            setAppLang={setAppLang}
+            onOpenWelcome={() => setShowWelcome(true)}
           />
         )}
         {currentTab === 'v2v' && <VoiceTranslator targetLang={targetLang} />}
@@ -76,19 +100,19 @@ export const App: React.FC = () => {
               <img src="/logo.svg" alt="Logo" className="w-full h-full" />
             </div>
             <p className="font-extrabold text-slate-800">
-              पलाश वाणी (PALASH Vani) • झारखंड मातृभाषा बहुभाषी शिक्षण संवर्धन (MTB-MLE)
+              {t.footerMission}
             </p>
           </div>
           <div className="flex items-center space-x-3 text-[11px] font-semibold text-slate-500">
-            <span>संथाली (Ol Chiki)</span>
+            <span>{t.footerSanthali}</span>
             <span>•</span>
-            <span>हो (Warang Chiti)</span>
+            <span>{t.footerHo}</span>
             <span>•</span>
-            <span>मुंडारी</span>
+            <span>{t.footerMundari}</span>
             <span>•</span>
-            <span className="text-emerald-700 font-bold">100% ऑफ़लाइन (≤2GB RAM)</span>
+            <span className="text-emerald-700 font-bold">{t.footerOfflineNote}</span>
             <span>•</span>
-            <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-black text-[10px]">v2.0 अपडेटेड</span>
+            <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-black text-[10px]">{t.footerVersion}</span>
           </div>
         </div>
       </footer>

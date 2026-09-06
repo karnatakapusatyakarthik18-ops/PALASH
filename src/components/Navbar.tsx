@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { TribalLanguage } from '../nlp/types';
 import { PalashPhoneticTTS } from '../audio/phoneticSynth';
+import { AppLanguage, translations } from '../i18n/translations';
+import { UserRole } from '../App';
 import { 
   Wifi, WifiOff, Cpu, BookOpen, Layers, Mic, FileText, Sparkles, 
   Home, Volume2, Edit3, Headphones, Camera, Award, Radio, Compass, Database, Palette,
-  User, GraduationCap
+  User, GraduationCap, Globe
 } from 'lucide-react';
 import { useTheme, THEMES, ThemeMode } from '../theme/ThemeContext';
 
@@ -15,8 +17,11 @@ interface NavbarProps {
   setTargetLang: (lang: TribalLanguage) => void;
   isOffline: boolean;
   setIsOffline: (offline: boolean) => void;
-  userRole: 'all' | 'teacher' | 'student';
-  setUserRole: (role: 'all' | 'teacher' | 'student') => void;
+  userRole: UserRole;
+  setUserRole: (role: UserRole) => void;
+  appLang: AppLanguage;
+  setAppLang: (lang: AppLanguage) => void;
+  onOpenWelcome: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -27,11 +32,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   isOffline,
   setIsOffline,
   userRole,
-  setUserRole
+  setUserRole,
+  appLang,
+  setAppLang,
+  onOpenWelcome
 }) => {
   const { theme, themeConfig, setTheme } = useTheme();
   const [testedAudio, setTestedAudio] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
+
+  const t = translations[appLang];
 
   const languageLabels: Record<TribalLanguage, { name: string; script: string }> = {
     santhali: { name: 'संथाली', script: 'ᱚᱞ ᱪᱤᱠᱤ (Ol Chiki)' },
@@ -39,23 +49,23 @@ export const Navbar: React.FC<NavbarProps> = ({
     mundari: { name: 'मुंडारी', script: 'देवनागरी (Mundari)' }
   };
 
-  const allTabs: Array<{ id: string; label: string; icon: any; badge?: string; role: 'all' | 'teacher' | 'student' }> = [
-    { id: 'home', label: 'होम', icon: Home, role: 'all' },
+  const allTabs: Array<{ id: string; label: string; icon: any; badge?: string; role: UserRole }> = [
+    { id: 'home', label: t.tabHome, icon: Home, role: 'all' },
     // Teacher & Core
-    { id: 'v2v', label: 'ध्वनि अनुवाद', icon: Mic, badge: '<800ms', role: 'all' },
-    { id: 'worksheet', label: 'कार्यपुस्तिका', icon: FileText, badge: 'NIPUN', role: 'teacher' },
-    { id: 'customLesson', label: 'कस्टम पाठ', icon: Sparkles, role: 'teacher' },
-    { id: 'text', label: 'पाठ्यचर्या', icon: Compass, role: 'teacher' },
-    { id: 'cert', label: 'शिक्षक सेतु', icon: Award, badge: 'सर्टिफिकेट', role: 'teacher' },
-    { id: 'mesh', label: 'मेश सिंक', icon: Radio, badge: 'P2P', role: 'teacher' },
-    { id: 'datasets', label: 'Kaggle डेटासेट', icon: Database, badge: 'Data', role: 'teacher' },
-    { id: 'diagnostics', label: 'टैबलेट स्थिति', icon: Cpu, role: 'teacher' },
+    { id: 'v2v', label: t.tabV2V, icon: Mic, badge: '<800ms', role: 'all' },
+    { id: 'worksheet', label: t.tabWorksheet, icon: FileText, badge: 'NIPUN', role: 'teacher' },
+    { id: 'customLesson', label: t.tabCustomLesson, icon: Sparkles, role: 'teacher' },
+    { id: 'text', label: t.tabText, icon: Compass, role: 'teacher' },
+    { id: 'cert', label: t.tabCert, icon: Award, badge: appLang === 'hi' ? 'सर्टिफिकेट' : 'Cert', role: 'teacher' },
+    { id: 'mesh', label: t.tabMesh, icon: Radio, badge: 'P2P', role: 'teacher' },
+    { id: 'datasets', label: t.tabDatasets, icon: Database, badge: 'Data', role: 'teacher' },
+    { id: 'diagnostics', label: t.tabDiagnostics, icon: Cpu, role: 'teacher' },
     // Student Activities
-    { id: 'slate', label: 'डिजिटल स्लेट', icon: Edit3, badge: 'नया', role: 'student' },
-    { id: 'game', label: 'फ़ोनिक्स गेम', icon: Headphones, badge: 'गेम', role: 'student' },
-    { id: 'camera', label: 'फोटो पहचानो', icon: Camera, badge: 'AI', role: 'student' },
-    { id: 'folktale', label: 'लोककथाएं', icon: BookOpen, role: 'student' },
-    { id: 'flashcards', label: 'फ्लैशकार्ड्स', icon: Layers, role: 'student' }
+    { id: 'slate', label: t.tabSlate, icon: Edit3, badge: appLang === 'hi' ? 'नया' : 'New', role: 'student' },
+    { id: 'game', label: t.tabGame, icon: Headphones, badge: appLang === 'hi' ? 'गेम' : 'Game', role: 'student' },
+    { id: 'camera', label: t.tabCamera, icon: Camera, badge: 'AI', role: 'student' },
+    { id: 'folktale', label: t.tabFolktale, icon: BookOpen, role: 'student' },
+    { id: 'flashcards', label: t.tabFlashcards, icon: Layers, role: 'student' }
   ];
 
   const visibleTabs = allTabs.filter(tab => {
@@ -86,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <h1 className="font-black text-lg md:text-xl tracking-tight text-white drop-shadow-sm">
-                  पलाश वाणी <span className="text-emerald-300 font-semibold text-sm md:text-base">(PALASH Vani)</span>
+                  {t.appName} <span className="text-emerald-300 font-semibold text-sm md:text-base">{t.appSubname}</span>
                 </h1>
                 <span className="text-[10px] uppercase font-black bg-emerald-400 text-black px-2.5 py-0.5 rounded-full shadow-sm">
                   MTB-MLE Jharkhand
@@ -96,22 +106,62 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <p className="text-xs text-stone-200 hidden sm:block">
-                प्राथमिक शिक्षक AI सहायक | संथाली • हो • मुंडारी (लाइट ग्रीन & ब्लैक एडिशन)
+                {t.appTagline}
               </p>
             </div>
           </div>
 
           {/* Right Status Controls */}
-          <div className="flex items-center space-x-2 text-xs">
+          <div className="flex flex-wrap items-center space-x-2 text-xs">
+            {/* Primary Language Switcher: Hindi (Primary) vs English (Secondary) */}
+            <div className="inline-flex bg-black/25 backdrop-blur-md p-0.5 rounded-xl border border-white/20 shadow-inner">
+              <button
+                onClick={() => setAppLang('hi')}
+                className={`px-2.5 py-1 rounded-lg font-black text-xs transition-all flex items-center space-x-1 ${
+                  appLang === 'hi'
+                    ? 'bg-amber-400 text-stone-950 shadow-md ring-1 ring-amber-300 scale-105'
+                    : 'text-stone-200 hover:text-white'
+                }`}
+                title="हिन्दी (मुख्य भाषा - SIH Focus)"
+              >
+                <span>🇮🇳</span>
+                <span>हिन्दी</span>
+                <span className="text-[9px] opacity-75 font-normal hidden md:inline">(Primary)</span>
+              </button>
+              <button
+                onClick={() => setAppLang('en')}
+                className={`px-2.5 py-1 rounded-lg font-black text-xs transition-all flex items-center space-x-1 ${
+                  appLang === 'en'
+                    ? 'bg-amber-400 text-stone-950 shadow-md ring-1 ring-amber-300 scale-105'
+                    : 'text-stone-200 hover:text-white'
+                }`}
+                title="English (Secondary Language - For Faculty & Students)"
+              >
+                <span>🌐</span>
+                <span>English</span>
+                <span className="text-[9px] opacity-75 font-normal hidden md:inline">(Secondary)</span>
+              </button>
+            </div>
+
+            {/* Intro / Welcome Screen Re-opener Button */}
+            <button
+              onClick={onOpenWelcome}
+              className="flex items-center space-x-1 px-2.5 py-1 rounded-lg font-bold bg-white/20 hover:bg-white/30 text-white border border-white/20 transition-all shadow-sm"
+              title={t.welcomeButton}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>{t.welcomeButton}</span>
+            </button>
+
             {/* Interactive Theme Switcher */}
             <div className="relative">
               <button
                 onClick={() => setShowThemeMenu(!showThemeMenu)}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-bold bg-white/20 hover:bg-white/30 text-white border border-white/20 transition-all shadow-sm"
+                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg font-bold bg-white/20 hover:bg-white/30 text-white border border-white/20 transition-all shadow-sm"
                 title="रंग थीम बदलें (Color Theme)"
               >
                 <Palette className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">थीम:</span>
+                <span className="hidden sm:inline">{t.themeLabel}</span>
                 <span>{themeConfig.icon} {themeConfig.shortName}</span>
               </button>
 
@@ -149,7 +199,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Quick Audio Test Button */}
             <button
               onClick={handleTestSpeaker}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-bold transition-all shadow-sm ${
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg font-bold transition-all shadow-sm ${
                 testedAudio
                   ? 'bg-amber-400 text-stone-950 ring-2 ring-amber-300 animate-pulse'
                   : 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
@@ -157,19 +207,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="स्पीकर ध्वनि टेस्ट करें"
             >
               <Volume2 className="w-3.5 h-3.5" />
-              <span>{testedAudio ? 'ध्वनि बज रही है... 🔊' : 'स्पीकर टेस्ट 🔊'}</span>
+              <span>{testedAudio ? t.speakerTesting : t.speakerTestBtn}</span>
             </button>
 
             {/* Memory indicator */}
-            <div className="hidden lg:flex items-center space-x-1.5 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 shadow-sm">
+            <div className="hidden xl:flex items-center space-x-1.5 bg-black/20 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/20 shadow-sm">
               <Cpu className="w-3.5 h-3.5 text-amber-300" />
-              <span>RAM: <strong>~68 MB</strong> / 2GB</span>
+              <span>{t.ramLabel}</span>
             </div>
 
             {/* Offline Mode Switcher */}
             <button
               onClick={() => setIsOffline(!isOffline)}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-bold transition-all shadow-md ${
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg font-bold transition-all shadow-md ${
                 isOffline 
                   ? 'bg-emerald-600 text-white border border-emerald-400 ring-2 ring-emerald-300/40' 
                   : 'bg-white/20 text-stone-100 hover:bg-white/30'
@@ -177,7 +227,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="100% ऑफ़लाइन मोड टॉगल करें"
             >
               {isOffline ? <WifiOff className="w-3.5 h-3.5 text-emerald-200" /> : <Wifi className="w-3.5 h-3.5" />}
-              <span>{isOffline ? '100% ऑफ़लाइन' : 'ऑनलाइन'}</span>
+              <span>{isOffline ? t.offlineMode : t.onlineMode}</span>
             </button>
           </div>
         </div>
@@ -187,9 +237,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 py-2 flex flex-col lg:flex-row items-center justify-between gap-3">
         {/* Left Side: Language Selector + Role Interface Switcher */}
         <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto shrink-0">
-          {/* Language Selector */}
+          {/* Tribal Language Selector */}
           <div className="flex items-center space-x-1.5 shrink-0">
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">भाषा:</span>
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">{t.languageLabel}</span>
             <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
               {(['santhali', 'ho', 'mundari'] as TribalLanguage[]).map((lang) => (
                 <button
@@ -210,7 +260,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Role Interface Switcher: Teacher vs Student vs All */}
           <div className="flex items-center space-x-1.5 shrink-0">
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">इंटरफेस:</span>
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">{t.interfaceLabel}</span>
             <div className="inline-flex bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-inner">
               <button
                 onClick={() => {
@@ -227,7 +277,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="शिक्षक अध्यापन उपकरण (Teacher Mode)"
               >
                 <GraduationCap className="w-3.5 h-3.5" />
-                <span>👨‍🏫 शिक्षक</span>
+                <span>{t.roleTeacher}</span>
               </button>
 
               <button
@@ -245,7 +295,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="छात्र खेल व स्व-अध्ययन (Student Mode)"
               >
                 <User className="w-3.5 h-3.5" />
-                <span>🧒 विद्यार्थी</span>
+                <span>{t.roleStudent}</span>
               </button>
 
               <button
@@ -257,7 +307,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
                 title="सभी 14 मॉड्यूल देखें (Master View)"
               >
-                <span>🌐 सभी</span>
+                <span>{t.roleAll}</span>
               </button>
             </div>
           </div>

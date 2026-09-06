@@ -1,8 +1,10 @@
 import React from 'react';
 import { TribalLanguage } from '../nlp/types';
+import { AppLanguage, translations } from '../i18n/translations';
+import { UserRole } from '../App';
 import { 
   Mic, BookOpen, FileText, Layers, Sparkles, WifiOff, Cpu, 
-  ArrowRight, Award, Edit3, Headphones, Camera, Radio, User, GraduationCap, Compass, Database 
+  ArrowRight, Award, Edit3, Headphones, Camera, Radio, User, GraduationCap, Compass, Database, Globe
 } from 'lucide-react';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -10,8 +12,11 @@ interface HeroIntroProps {
   onSelectTab: (tab: string) => void;
   targetLang: TribalLanguage;
   setTargetLang: (lang: TribalLanguage) => void;
-  userRole: 'all' | 'teacher' | 'student';
-  setUserRole: (role: 'all' | 'teacher' | 'student') => void;
+  userRole: UserRole;
+  setUserRole: (role: UserRole) => void;
+  appLang: AppLanguage;
+  setAppLang: (lang: AppLanguage) => void;
+  onOpenWelcome: () => void;
 }
 
 export const HeroIntro: React.FC<HeroIntroProps> = ({ 
@@ -19,14 +24,19 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
   targetLang, 
   setTargetLang,
   userRole,
-  setUserRole
+  setUserRole,
+  appLang,
+  setAppLang,
+  onOpenWelcome
 }) => {
   const { themeConfig } = useTheme();
+  const t = translations[appLang];
+
   const allFeatures = [
     {
       id: 'v2v',
-      title: '1. ध्वनि अनुवाद (Voice-to-Voice)',
-      desc: 'शिक्षक हिंदी में बोलें और तुरंत संथाली/हो/मुंडारी में सटीक ऑडियो पाएं। <800ms लेटेंसी।',
+      title: t.featV2VTitle,
+      desc: t.featV2VDesc,
       icon: Mic,
       gradient: 'from-amber-500 via-orange-500 to-rose-600',
       badge: '<800ms',
@@ -35,48 +45,48 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
     },
     {
       id: 'slate',
-      title: '2. डिजिटल स्लेट (Letter Tracing)',
-      desc: 'पारंपरिक स्लेट पर ओल चिकी व वारंग चिति अक्षर अनुरेखण, चॉक कलर्स एवं ऑडियो शाबाशी।',
+      title: t.featSlateTitle,
+      desc: t.featSlateDesc,
       icon: Edit3,
       gradient: 'from-emerald-500 via-teal-600 to-green-700',
-      badge: 'इंटरैक्टिव स्लेट',
+      badge: appLang === 'hi' ? 'इंटरैक्टिव स्लेट' : 'Interactive Slate',
       badgeColor: 'bg-emerald-600 text-white',
       role: 'student' as const
     },
     {
       id: 'game',
-      title: '3. सुनो और पहचानो (Phonics Game)',
-      desc: 'ध्वनि सुनकर सही चित्र चुनने वाला गेम — बालवाटिका व कक्षा 1 हेतु स्कोर व स्ट्रीक।',
+      title: t.featGameTitle,
+      desc: t.featGameDesc,
       icon: Headphones,
       gradient: 'from-fuchsia-500 via-purple-600 to-indigo-700',
-      badge: 'FLN गेम',
+      badge: appLang === 'hi' ? 'FLN गेम' : 'FLN Game',
       badgeColor: 'bg-purple-600 text-white',
       role: 'student' as const
     },
     {
       id: 'camera',
-      title: '4. फोटो पहचानो (Visual Camera FLN)',
-      desc: 'कक्षा की वस्तुओं पर कैमरा इंगित करें — AI तुरंत वस्तु पहचानकर मातृभाषा में नाम बोलता है।',
+      title: t.featCameraTitle,
+      desc: t.featCameraDesc,
       icon: Camera,
       gradient: 'from-cyan-500 via-blue-600 to-indigo-700',
-      badge: 'कैमरा AI',
+      badge: appLang === 'hi' ? 'कैमरा AI' : 'Camera AI',
       badgeColor: 'bg-cyan-600 text-white',
       role: 'student' as const
     },
     {
       id: 'folktale',
-      title: '5. लोककथाएं व बालगीत (Karaoke)',
-      desc: 'वाक्य-दर-वाक्य हाइलाइटिंग एवं ऑडियो के साथ पारंपरिक जनजातीय कथाएं।',
+      title: t.featFolktaleTitle,
+      desc: t.featFolktaleDesc,
       icon: BookOpen,
       gradient: 'from-blue-600 via-indigo-600 to-violet-700',
-      badge: 'मातृभाषा कराओके',
+      badge: appLang === 'hi' ? 'मातृभाषा कराओके' : 'Tribal Karaoke',
       badgeColor: 'bg-blue-600 text-white',
       role: 'student' as const
     },
     {
       id: 'worksheet',
-      title: '6. निपुण भारत कार्यपुस्तिका जनरेटर',
-      desc: 'कक्षा 1-3 के लिए चित्र मिलान, गिनती और अनुरेखण कार्यपत्रक। A4 प्रिंट रेडी।',
+      title: t.featWorksheetTitle,
+      desc: t.featWorksheetDesc,
       icon: FileText,
       gradient: 'from-orange-500 via-amber-600 to-yellow-600',
       badge: 'NIPUN Bharat',
@@ -85,48 +95,48 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
     },
     {
       id: 'customLesson',
-      title: '7. कस्टम पाठ योजना निर्माता (AI)',
-      desc: 'कोई भी हिंदी विषय लिखें — AI स्वतः 30-मिनट का द्विभाषी कक्षा संवाद तैयार करेगा।',
+      title: t.featCustomLessonTitle,
+      desc: t.featCustomLessonDesc,
       icon: Sparkles,
       gradient: 'from-rose-500 via-pink-600 to-purple-600',
-      badge: 'AI जनरेटर',
+      badge: appLang === 'hi' ? 'AI जनरेटर' : 'AI Planner',
       badgeColor: 'bg-rose-600 text-white',
       role: 'teacher' as const
     },
     {
       id: 'flashcards',
-      title: '8. 3D सचित्र फ्लैशकार्ड स्टूडियो',
-      desc: 'कक्षा में बच्चों को चित्र, लिपि और सटीक उच्चारण सिखाने हेतु 3D फ्लिप कार्ड्स।',
+      title: t.featFlashcardsTitle,
+      desc: t.featFlashcardsDesc,
       icon: Layers,
       gradient: 'from-violet-600 via-purple-600 to-pink-600',
-      badge: '3D फ्लिप',
+      badge: appLang === 'hi' ? '3D फ्लिप' : '3D Flip',
       badgeColor: 'bg-violet-600 text-white',
       role: 'student' as const
     },
     {
       id: 'cert',
-      title: '9. शिक्षक भाषा सेतु (Certification)',
-      desc: 'गैर-जनजातीय शिक्षकों हेतु 5-मिनट दैनिक अभ्यास, प्रश्नोत्तरी एवं आधिकारिक प्रमाण पत्र।',
+      title: t.featCertTitle,
+      desc: t.featCertDesc,
       icon: Award,
       gradient: 'from-amber-600 via-orange-600 to-red-600',
-      badge: 'सर्टिफिकेट',
+      badge: appLang === 'hi' ? 'सर्टिफिकेट' : 'Certificate',
       badgeColor: 'bg-amber-600 text-white',
       role: 'teacher' as const
     },
     {
       id: 'mesh',
-      title: '10. क्लस्टर मेश सिंक (Offline P2P)',
-      desc: 'शून्य इंटरनेट वाले क्षेत्रों में टैबलेट-टू-टैबलेट स्थानीय हॉटस्पॉट सामग्री साझाकरण।',
+      title: t.featMeshTitle,
+      desc: t.featMeshDesc,
       icon: Radio,
       gradient: 'from-teal-500 via-emerald-600 to-green-700',
-      badge: '0 KB डेटा',
+      badge: '0 KB WiFi',
       badgeColor: 'bg-teal-600 text-white',
       role: 'teacher' as const
     },
     {
       id: 'datasets',
-      title: '11. Kaggle ओपन डेटासेट एक्सप्लोरर',
-      desc: 'संथाली 40 वर्णमाला, NIPUN कक्षा वाक्य एवं StoryWeaver लोककथाओं का पूर्ण डेटा बैंक।',
+      title: t.featDatasetsTitle,
+      desc: t.featDatasetsDesc,
       icon: Database,
       gradient: 'from-blue-700 via-indigo-700 to-slate-900',
       badge: 'Kaggle Data',
@@ -135,11 +145,11 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
     },
     {
       id: 'text',
-      title: '12. पाठ्यचर्या अनुवाद व स्क्रिप्ट',
-      desc: 'पाठ्यपुस्तकों का द्विभाषी अनुवाद एवं देवनागरी उच्चारण स्क्रिप्ट गाइड।',
+      title: t.featTextTitle,
+      desc: t.featTextDesc,
       icon: Compass,
       gradient: 'from-emerald-600 via-teal-700 to-stone-800',
-      badge: 'FLN गाइड',
+      badge: 'FLN Guide',
       badgeColor: 'bg-emerald-800 text-white',
       role: 'teacher' as const
     }
@@ -155,8 +165,8 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
     <div className="space-y-8 mb-8">
       {/* Radiant Hero Banner */}
       <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${themeConfig.heroGradient} text-white shadow-2xl p-6 md:p-10 border border-white/20 transition-all duration-300`}>
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
           {/* Left Column: Mission, Headlines & Quick CTAs */}
@@ -165,25 +175,28 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
             <div className="inline-flex flex-wrap items-center justify-center lg:justify-start gap-2">
               <span className="bg-amber-300 text-stone-950 text-xs font-black px-3 py-1 rounded-full shadow-md flex items-center space-x-1 uppercase tracking-wider">
                 <Award className="w-3.5 h-3.5" />
-                <span>झारखण्ड PALASH MTB-MLE</span>
+                <span>{t.missionBadge}</span>
               </span>
               <span className="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30 flex items-center space-x-1">
                 <WifiOff className="w-3.5 h-3.5 text-emerald-300" />
-                <span>100% ऑफ़लाइन टैबलेट रेडी</span>
+                <span>{t.offlineBadge}</span>
               </span>
-              <span className="bg-emerald-400 text-emerald-950 text-xs font-black px-3 py-1 rounded-full shadow-md flex items-center space-x-1 uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{themeConfig.icon} {themeConfig.shortName}</span>
-              </span>
+              <button 
+                onClick={onOpenWelcome}
+                className="bg-white/25 hover:bg-white/35 backdrop-blur-md text-amber-200 text-xs font-bold px-3 py-1 rounded-full border border-amber-300/40 flex items-center space-x-1 transition-all"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>{t.welcomeButton}</span>
+              </button>
             </div>
 
             {/* Main App Title */}
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight drop-shadow-md">
-                पलाश वाणी <span className="text-amber-300">(PALASH Vani)</span>
+                {t.heroTitle} <span className="text-amber-300">{t.appSubname}</span>
               </h1>
               <p className="text-base md:text-lg font-medium text-stone-100 leading-relaxed">
-                झारखण्ड के प्राथमिक विद्यालयों में गैर-जनजातीय शिक्षकों हेतु <strong>संथाली, हो और मुंडारी</strong> में मातृभाषा आधारित बहुभाषी शिक्षण (MTB-MLE) संवर्धन प्रणाली।
+                {t.heroSubtitle}
               </p>
             </div>
 
@@ -194,7 +207,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 className="bg-white text-orange-700 hover:bg-amber-50 font-black px-4 py-2.5 rounded-xl shadow-md transition-all hover:scale-105 flex items-center space-x-1.5 text-xs md:text-sm"
               >
                 <Mic className="w-4 h-4 text-orange-600 animate-pulse" />
-                <span>ध्वनि अनुवाद</span>
+                <span>{t.heroQuickVoice}</span>
               </button>
 
               <button
@@ -202,7 +215,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 className="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-4 py-2.5 rounded-xl shadow-md transition-all hover:scale-105 text-xs md:text-sm flex items-center space-x-1.5"
               >
                 <Edit3 className="w-4 h-4" />
-                <span>डिजिटल स्लेट</span>
+                <span>{t.heroQuickSlate}</span>
               </button>
 
               <button
@@ -210,7 +223,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 className="bg-purple-600 hover:bg-purple-700 text-white font-black px-4 py-2.5 rounded-xl shadow-md transition-all hover:scale-105 text-xs md:text-sm flex items-center space-x-1.5"
               >
                 <Headphones className="w-4 h-4" />
-                <span>फ़ोनिक्स गेम</span>
+                <span>{t.heroQuickGame}</span>
               </button>
 
               <button
@@ -218,7 +231,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 className="bg-cyan-600 hover:bg-cyan-700 text-white font-black px-4 py-2.5 rounded-xl shadow-md transition-all hover:scale-105 text-xs md:text-sm flex items-center space-x-1.5"
               >
                 <Camera className="w-4 h-4" />
-                <span>फोटो पहचानो</span>
+                <span>{t.heroQuickCamera}</span>
               </button>
 
               <button
@@ -226,7 +239,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 className="bg-blue-600 hover:bg-blue-700 text-white font-black px-4 py-2.5 rounded-xl shadow-md transition-all hover:scale-105 text-xs md:text-sm flex items-center space-x-1.5"
               >
                 <BookOpen className="w-4 h-4" />
-                <span>लोककथाएं</span>
+                <span>{t.heroQuickFolktale}</span>
               </button>
             </div>
           </div>
@@ -234,7 +247,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
           {/* Right Column: Hero App Logo with Pulsing Vibrant Halo */}
           <div className="flex flex-col items-center justify-center relative">
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-rose-500 to-violet-600 rounded-full blur-2xl opacity-60 group-hover:opacity-90 animate-pulse transition-opacity"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-rose-500 to-violet-600 rounded-full blur-2xl opacity-60 group-hover:opacity-90 animate-pulse transition-opacity" />
               
               <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-white/95 backdrop-blur-lg p-3 shadow-2xl border-4 border-white/50 flex flex-col items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
                 <img src="/logo.svg" alt="PALASH Vani Logo" className="w-full h-full object-contain filter drop-shadow-md" />
@@ -242,12 +255,58 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
             </div>
 
             <div className="mt-4 flex items-center space-x-2 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-xs font-bold">
-              <span className="text-amber-300">सक्रिय:</span>
+              <span className="text-amber-300">{t.heroActiveLang}</span>
               <span className="uppercase text-white tracking-wider">{targetLang}</span>
               <span className="text-white/60">•</span>
-              <span className="text-emerald-300">{allFeatures.length} इंटरैक्टिव सुविधाएं</span>
+              <span className="text-emerald-300">{allFeatures.length} {t.heroInteractiveFeatures}</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Language Priority Banner (Hindi Primary vs English Secondary) */}
+      <div className="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center space-x-3 text-stone-800 text-center sm:text-left">
+          <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+            <Globe className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-black text-stone-900">
+              {appLang === 'hi' 
+                ? 'एप्लिकेशन भाषा (Operating Language): हिन्दी (मुख्य भाषा) एवं English (सहायक भाषा)'
+                : 'Application Language: Hindi (Primary SIH Focus) & English (Secondary Language)'}
+            </h3>
+            <p className="text-xs text-stone-500">
+              {appLang === 'hi'
+                ? 'समस्या कथन के अनुसार हिन्दी मुख्य भाषा है। संकाय एवं विद्यार्थियों हेतु अंग्रेज़ी भी पूर्णतः उपलब्ध है।'
+                : 'Hindi is the primary language aligned with the SIH problem statement. English is provided for faculty and students.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="inline-flex bg-stone-100 p-1 rounded-xl border border-stone-200 shrink-0">
+          <button
+            onClick={() => setAppLang('hi')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center space-x-1.5 ${
+              appLang === 'hi'
+                ? 'bg-orange-600 text-white shadow-md'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <span>🇮🇳</span>
+            <span>हिन्दी (Primary)</span>
+          </button>
+          <button
+            onClick={() => setAppLang('en')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center space-x-1.5 ${
+              appLang === 'en'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <span>🌐</span>
+            <span>English (Secondary)</span>
+          </button>
         </div>
       </div>
 
@@ -257,10 +316,12 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
           <div>
             <h2 className="text-xl font-black text-slate-800 flex items-center space-x-2">
               <span>👥</span>
-              <span>कक्षा भूमिका चयन (Select Persona Interface):</span>
+              <span>{appLang === 'hi' ? 'कक्षा भूमिका चयन (Select Persona Interface):' : 'Select Classroom Persona Interface:'}</span>
             </h2>
             <p className="text-xs text-slate-500">
-              शिक्षक अध्यापन उपकरण अथवा छात्र बाल-अध्ययन स्टूडियो में से अपना इंटरफेस चुनें।
+              {appLang === 'hi' 
+                ? 'शिक्षक अध्यापन उपकरण अथवा छात्र बाल-अध्ययन स्टूडियो में से अपना इंटरफेस चुनें।'
+                : 'Switch between the Teacher Pedagogical Portal and Student Learning Studio.'}
             </p>
           </div>
           <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner text-xs font-black shrink-0">
@@ -272,7 +333,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                   : 'text-slate-600 hover:text-black'
               }`}
             >
-              🌐 संपूर्ण दृश्य ({allFeatures.length} मॉड्यूल)
+              {t.heroMasterViewBtn}
             </button>
           </div>
         </div>
@@ -295,20 +356,23 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 <span className={`text-xs font-black px-3 py-1 rounded-full ${
                   userRole === 'teacher' ? 'bg-emerald-500 text-black' : 'bg-stone-100 text-stone-700'
                 }`}>
-                  {userRole === 'teacher' ? '✓ सक्रिय इंटरफेस' : 'सक्रिय करने हेतु क्लिक करें'}
+                  {userRole === 'teacher' ? t.roleActiveBadge : t.roleClickToActivate}
                 </span>
               </div>
               <div>
                 <h3 className="text-xl font-black flex items-center gap-2">
-                  <span>👨‍🏫 शिक्षक अध्यापन केंद्र</span>
-                  <span className="text-xs font-semibold text-emerald-400">(Teacher Portal)</span>
+                  <span>{t.heroTeacherCardTitle}</span>
+                  <span className="text-xs font-semibold text-emerald-400">{t.heroTeacherCardSubtitle}</span>
                 </h3>
                 <p className={`text-xs mt-1.5 leading-relaxed ${userRole === 'teacher' ? 'text-stone-300' : 'text-stone-600'}`}>
-                  गैर-जनजातीय प्राथमिक शिक्षकों हेतु: रियल-टाइम ध्वनि अनुवाद, निपुण भारत A4 कार्यपुस्तिका, 30-मिनट पाठ योजनाएं, एवं शिक्षक प्रमाणन।
+                  {t.heroTeacherCardDesc}
                 </p>
               </div>
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {['🎙️ ध्वनि अनुवाद', '📄 कार्यपुस्तिका जनरेटर', '✨ कस्टम पाठ योजना', '🧭 पाठ्यचर्या स्क्रिप्ट', '🏅 शिक्षक सेतु', '📶 मेश सिंक', '📊 Kaggle डेटा'].map((chip, idx) => (
+                {(appLang === 'hi' 
+                  ? ['🎙️ ध्वनि अनुवाद', '📄 कार्यपुस्तिका जनरेटर', '✨ कस्टम पाठ योजना', '🧭 पाठ्यचर्या स्क्रिप्ट', '🏅 शिक्षक सेतु', '📶 मेश सिंक', '📊 Kaggle डेटा']
+                  : ['🎙️ Voice Translator', '📄 A4 Worksheets', '✨ Custom Lesson AI', '🧭 Curriculum Guide', '🏅 Teacher Bridge', '📶 Mesh Sync', '📊 Kaggle Datasets']
+                ).map((chip, idx) => (
                   <span key={idx} className={`text-[11px] font-bold px-2.5 py-1 rounded-lg ${
                     userRole === 'teacher' ? 'bg-white/10 text-emerald-300 border border-emerald-500/20' : 'bg-stone-100 text-stone-700'
                   }`}>
@@ -320,7 +384,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
             <div className={`pt-4 mt-4 border-t flex items-center justify-between text-xs font-black ${
               userRole === 'teacher' ? 'border-white/10 text-emerald-400' : 'border-stone-100 text-stone-800'
             }`}>
-              <span>शिक्षक उपकरण इंटरफेस देखें ({allFeatures.filter(f => f.role === 'teacher' || f.role === 'all').length} टूल्स)</span>
+              <span>{t.heroTeacherCardCta} ({allFeatures.filter(f => f.role === 'teacher' || f.role === 'all').length} {appLang === 'hi' ? 'टूल्स' : 'tools'})</span>
               <ArrowRight className="w-4 h-4" />
             </div>
           </div>
@@ -342,20 +406,23 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 <span className={`text-xs font-black px-3 py-1 rounded-full ${
                   userRole === 'student' ? 'bg-amber-300 text-black' : 'bg-stone-100 text-stone-700'
                 }`}>
-                  {userRole === 'student' ? '✓ सक्रिय इंटरफेस' : 'सक्रिय करने हेतु क्लिक करें'}
+                  {userRole === 'student' ? t.roleActiveBadge : t.roleClickToActivate}
                 </span>
               </div>
               <div>
                 <h3 className="text-xl font-black flex items-center gap-2">
-                  <span>🧒 विद्यार्थी बाल-अध्ययन केंद्र</span>
-                  <span className="text-xs font-semibold text-amber-200">(Student Studio)</span>
+                  <span>{t.heroStudentCardTitle}</span>
+                  <span className="text-xs font-semibold text-amber-200">{t.heroStudentCardSubtitle}</span>
                 </h3>
                 <p className={`text-xs mt-1.5 leading-relaxed ${userRole === 'student' ? 'text-emerald-100' : 'text-stone-600'}`}>
-                  जनजातीय बच्चों हेतु: डिजिटल स्लेट (अक्षर अनुरेखण), ध्वनि व चित्र गेम, सचित्र लोककथाएं, 3D फ्लैशकार्ड्स एवं ऑडियो अभ्यास।
+                  {t.heroStudentCardDesc}
                 </p>
               </div>
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {['✏️ डिजिटल स्लेट', '🎮 फ़ोनिक्स गेम', '📚 सचित्र लोककथाएं', '📸 फोटो AI', '🃏 3D फ्लैशकार्ड्स', '🗣️ छात्र स्व-अध्ययन'].map((chip, idx) => (
+                {(appLang === 'hi'
+                  ? ['✏️ डिजिटल स्लेट', '🎮 फ़ोनिक्स गेम', '📚 सचित्र लोककथाएं', '📸 फोटो AI', '🃏 3D फ्लैशकार्ड्स', '🗣️ छात्र स्व-अध्ययन']
+                  : ['✏️ Digital Slate', '🎮 Phonics Game', '📚 Tribal Folktales', '📸 Photo AI', '🃏 3D Flashcards', '🗣️ Self-Learning']
+                ).map((chip, idx) => (
                   <span key={idx} className={`text-[11px] font-bold px-2.5 py-1 rounded-lg ${
                     userRole === 'student' ? 'bg-white/20 text-amber-200 border border-white/20' : 'bg-stone-100 text-stone-700'
                   }`}>
@@ -367,7 +434,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
             <div className={`pt-4 mt-4 border-t flex items-center justify-between text-xs font-black ${
               userRole === 'student' ? 'border-white/10 text-amber-300' : 'border-stone-100 text-stone-800'
             }`}>
-              <span>विद्यार्थी गतिविधियां इंटरफेस देखें ({allFeatures.filter(f => f.role === 'student' || f.role === 'all').length} गतिविधियां)</span>
+              <span>{t.heroStudentCardCta} ({allFeatures.filter(f => f.role === 'student' || f.role === 'all').length} {appLang === 'hi' ? 'गतिविधियां' : 'activities'})</span>
               <ArrowRight className="w-4 h-4" />
             </div>
           </div>
@@ -376,19 +443,19 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
 
       {/* Filtered Feature Directory */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <h2 className="text-xl font-black text-slate-800 flex items-center space-x-2">
             <span>✨</span>
             <span>
               {userRole === 'teacher'
-                ? 'शिक्षक अध्यापन उपकरण (Teacher Pedagogical Modules):'
+                ? t.heroDirectoryTitleTeacher
                 : userRole === 'student'
-                ? 'विद्यार्थी बाल-अध्ययन गतिविधियां (Student Learning Activities):'
-                : 'पलाश वाणी की सभी प्रमुख सुविधाएं (Complete Feature Directory):'}
+                ? t.heroDirectoryTitleStudent
+                : t.heroDirectoryTitleAll}
             </span>
           </h2>
           <span className="text-xs font-bold text-slate-500">
-            कुल {visibleFeatures.length} मॉड्यूल उपलब्ध • क्लिक करके सीधे खोलें ➔
+            {visibleFeatures.length} {t.heroDirectorySubtitle}
           </span>
         </div>
 
@@ -401,7 +468,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 onClick={() => onSelectTab(feat.id)}
                 className="group cursor-pointer bg-white rounded-3xl p-5 border border-slate-200 hover:border-transparent hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden flex flex-col justify-between"
               >
-                <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${feat.gradient} transition-all`}></div>
+                <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${feat.gradient} transition-all`} />
 
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
@@ -422,7 +489,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 </div>
 
                 <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs font-black text-orange-600 group-hover:text-orange-700">
-                  <span>खोलें एवं उपयोग करें</span>
+                  <span>{t.cardOpenBtn}</span>
                   <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
