@@ -48,8 +48,30 @@ Jharkhand's **PALASH (Promotion of Appropriate Language and Academic Skills for 
 |                               Offline Core & Storage Layer                              |
 |   - Service Worker (CacheFirst Shell & Assets)   - IndexedDB (Custom Lessons & Audio)   |
 |   - Web Audio API (Native Acoustic Generator)     - Memory Monitor (<80MB RAM budget)   |
-+-----------------------------------------------------------------------------------------+
 ```
+
+---
+
+## 📸 Technical Architecture & Application Showcase
+
+| Technical Approach Slide (Slide 3) | 5-Tier Tech Stack Flowchart |
+| :---: | :---: |
+| ![Technical Slide](docs/images/slide_technical_flowchart.jpg) | ![Tech Stack Flowchart](docs/images/tech_stack_flowchart.jpg) |
+| *[Open Interactive Slide 3](public/slide_technical_approach.html)* | *[Open Tech Stack Flowchart](public/tech_stack_flowchart.html)* |
+
+| Classroom Dashboard | Interactive Digital Slate (Letter Tracing) |
+| :---: | :---: |
+| ![Dashboard](docs/images/dashboard.jpg) | ![Digital Slate](docs/images/digital_slate.jpg) |
+
+| A4 NIPUN Bharat Worksheet Print Engine | Offline Peer-to-Peer Mesh Sync |
+| :---: | :---: |
+| ![Worksheet Print](docs/images/worksheet_print.jpg) | ![Mesh Sync](docs/images/mesh_sync.jpg) |
+
+> 📚 **Detailed Architecture & Presentation Documents:**
+> - 📄 **[Technical Approach Architecture & Data Flow](docs/technical_approach_architecture.md)**
+> - 📊 **[System Architecture & Fallback Flowchart](docs/system_architecture_flowchart.md)**
+> - 🎯 **[SIH 2026 Presentation Slide Deck (Complete 10 Slides)](docs/sih_presentation_deck.md)**
+> - 🖥️ **[Slide 3 Technical Defense & Script](docs/sih_slide_technical_approach.md)**
 
 ---
 

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIH Slide 3: Technical Approach & Architecture</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #0f172a;
+    }
+    .slide-canvas {
+      width: 1280px;
+      height: 720px;
+      aspect-ratio: 16 / 9;
+      background: #ffffff;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-center items-center p-4">
+
+  <!-- 16:9 Presentation Slide Container -->
+  <div class="slide-canvas relative rounded-xl overflow-hidden border border-slate-300 flex flex-col p-7 select-none">
+
+    <!-- Slide Header Bar -->
+    <div class="flex justify-between items-center pb-3 border-b-2 border-slate-200">
+      <div class="flex items-center gap-3">
+        <span class="px-2.5 py-1 bg-blue-900 text-white text-xs font-black tracking-wider rounded">SLIDE 3</span>
+        <h1 class="text-xl font-black text-slate-900 tracking-tight">TECHNICAL APPROACH & SYSTEM ARCHITECTURE</h1>
+      </div>
+      <div class="text-right">
+        <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+          Problem ID: SIH26042 • PALASH Vani
+        </span>
+      </div>
+    </div>
+
+    <!-- Main Content Area: Left & Right Grid -->
+    <div class="grid grid-cols-12 gap-5 flex-1 pt-3">
+
+      <!-- LEFT COLUMN: Hardware & Software (4 Cols) -->
+      <div class="col-span-4 flex flex-col pr-4 border-r-2 border-dashed border-slate-300">
+        <h2 class="text-base font-black text-slate-900 pb-1.5 border-b border-slate-200 uppercase tracking-wide">
+          Hardware & Software
+        </h2>
+
+        <div class="text-[11px] text-slate-700 space-y-2 mt-2 leading-relaxed overflow-y-auto pr-1">
+          <div>
+            <span class="font-bold text-slate-900">• Target Client Hardware:</span>
+            Low-cost Android Tablets (Android 8.0+, 2GB RAM, Quad-Core SoC) & Teacher Smart Phones.
+          </div>
+          <div>
+            <span class="font-bold text-slate-900">• Audio Input & MEMS Mic:</span>
+            Device-native 16–48 kHz microphone with Web Speech API for on-device Hindi voice capture.
+          </div>
+          <div>
+            <span class="font-bold text-slate-900">• Touch & Stylus Canvas:</span>
+            HTML5 Canvas 2D API for 60 FPS Ol Chiki / Warang Chiti stroke tracing with real-time accuracy scoring.
+          </div>
+          <div>
+            <span class="font-bold text-slate-900">• React 18 + TypeScript:</span>
+            Static compile-time type safety preventing crashes; modular component tree for Quick Translator, Slate, & Worksheets.
+          </div>
+          <div>
+            <span class="font-bold text-slate-900">• Pure In-Memory NLP Engine:</span>
+            Zero-Python / Zero-Server architecture. O(1) hash lexicon with morphological lemmatizer executing in &lt;1 ms.
+          </div>
+          <div>
+            <span class="font-bold text-slate-900">• Dual-Engine Speech Synthesis:</span>
+            Native device SpeechSynthesis API + Web Audio API Klatt Formant Oscillator fallback (&lt;400 ms latency).
+          </div>
+          <div>
+            <span class="font-bold text-slate-900">• Offline PWA & Service Worker:</span>
+            <code>sw.js</code> with CacheFirst strategy; ~68 MB RAM footprint; zero internet bytes needed in the classroom.
+          </div>
+          <div>
+            <span class="font-bold text-slate-900">• Printable Worksheet Engine:</span>
+            Pure vector SVG + CSS <code>@media print</code> for high-resolution A4 dual-script worksheets.
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: FLOW CHART + 3 LAYER + LINKS (8 Cols) -->
+      <div class="col-span-8 flex flex-col justify-between pl-2">
+
+        <!-- Flowchart Section Header -->
+        <div class="flex items-center justify-between pb-1">
+          <h2 class="text-base font-black text-blue-950 uppercase tracking-wide border-b-2 border-blue-600 pb-0.5 inline-block">
+            FLOW CHART
+          </h2>
+          <span class="text-[10px] font-semibold text-slate-500 italic">Sub-second local execution (Zero Cloud Roundtrip)</span>
+        </div>
+
+        <!-- Flowchart Architecture Diagram Area -->
+        <div class="relative bg-slate-50/70 border border-slate-200 rounded-xl p-3 flex-1 flex flex-col justify-center">
+
+          <!-- Top Pipeline: Input -> Lexicon -> Morphological NLP -> Output -->
+          <div class="grid grid-cols-12 gap-2 items-center">
+            
+            <!-- Box 1: Teacher Input (Coral / Salmon) -->
+            <div class="col-span-3 bg-red-100/90 border-2 border-rose-400 rounded-lg p-2 text-center shadow-sm">
+              <div class="text-[9px] font-extrabold text-rose-800 uppercase">Input Layer</div>
+              <div class="text-[11px] font-black text-rose-950 mt-0.5">Teacher Input</div>
+              <div class="text-[9px] text-rose-800 leading-tight mt-1">
+                Hindi Voice (STT)<br/>or Action Chips
+              </div>
+            </div>
+
+            <!-- Arrow to Engine -->
+            <div class="col-span-1 flex flex-col items-center justify-center text-slate-500 font-bold text-xs">
+              <span>➔</span>
+            </div>
+
+            <!-- Box 2: Lexicon Engine (Teal / Cyan) -->
+            <div class="col-span-3 bg-teal-100/90 border-2 border-teal-500 rounded-lg p-2 text-center shadow-sm">
+              <div class="text-[9px] font-extrabold text-teal-800 uppercase">Hash Lexicon</div>
+              <div class="text-[11px] font-black text-teal-950 mt-0.5">O(1) Direct Lookup</div>
+              <div class="text-[9px] text-teal-800 leading-tight mt-1">
+                250+ FLN Terms<br/>&lt; 0.02ms RAM match
+              </div>
+            </div>
+
+            <!-- Arrow to NLP Container -->
+            <div class="col-span-1 flex flex-col items-center justify-center text-slate-500 font-bold text-xs">
+              <span class="text-[8px] text-slate-500 font-semibold mb-[-2px]">if inflected</span>
+              <span>➔</span>
+            </div>
+
+            <!-- Box 3: Adaptive NLP Lemmatizer (Purple Container) -->
+            <div class="col-span-4 bg-purple-50 border-2 border-purple-400 rounded-lg p-2 shadow-sm">
+              <div class="text-[9px] font-black text-purple-900 uppercase text-center border-b border-purple-200 pb-1">
+                Adaptive NLP Processing
+              </div>
+              <div class="space-y-1 mt-1.5">
+                <div class="bg-purple-200/70 text-purple-950 text-[9px] font-semibold px-2 py-0.5 rounded text-center">
+                  Morphological Lemmatizer (strip -ना, -ेंगे)
+                </div>
+                <div class="bg-purple-200/70 text-purple-950 text-[9px] font-semibold px-2 py-0.5 rounded text-center">
+                  Munda Agglutinative Clitics (-me, -pe, -ko)
+                </div>
+                <div class="bg-purple-200/70 text-purple-950 text-[9px] font-semibold px-2 py-0.5 rounded text-center">
+                  Unicode Script Matrix (Ol Chiki / Warang Chiti)
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Middle Downward Connector -->
+          <div class="flex justify-center items-center py-1.5 text-slate-500 font-bold text-sm">
+            <span class="text-[9px] font-semibold bg-white px-2 py-0.5 rounded-full border border-slate-300 shadow-xs">
+              Dual-Pipeline Execution (&lt; 15 ms)
+            </span>
+          </div>
+
+          <!-- Bottom Pipeline: Dual Audio Synthesis + Output -->
+          <div class="grid grid-cols-12 gap-2 items-center">
+            
+            <!-- Dual-Script Visual Output (Blue Container) -->
+            <div class="col-span-6 bg-sky-50 border-2 border-sky-400 rounded-lg p-2 shadow-sm">
+              <div class="text-[9px] font-black text-sky-900 uppercase text-center border-b border-sky-200 pb-1">
+                Visual Dual-Script Generation
+              </div>
+              <div class="grid grid-cols-2 gap-1.5 mt-1.5 text-center">
+                <div class="bg-sky-200/70 text-sky-950 text-[9px] font-semibold p-1 rounded">
+                  <strong>Ol Chiki / Warang Chiti</strong><br/>
+                  (Native Student Script)
+                </div>
+                <div class="bg-sky-200/70 text-sky-950 text-[9px] font-semibold p-1 rounded">
+                  <strong>Devanagari Phonetics</strong><br/>
+                  (Teacher Pronunciation Guide)
+                </div>
+              </div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="col-span-1 flex flex-col items-center justify-center text-slate-500 font-bold text-xs">
+              <span>+</span>
+            </div>
+
+            <!-- Dual-Engine Audio Synthesis (Green Container) -->
+            <div class="col-span-5 bg-emerald-50 border-2 border-emerald-400 rounded-lg p-2 shadow-sm">
+              <div class="text-[9px] font-black text-emerald-900 uppercase text-center border-b border-emerald-200 pb-1">
+                Dual Audio Synthesis (TTS)
+              </div>
+              <div class="space-y-1 mt-1.5 text-center">
+                <div class="bg-emerald-200/70 text-emerald-950 text-[9px] font-semibold px-1.5 py-0.5 rounded">
+                  Primary: Native Android / Windows Speech API
+                </div>
+                <div class="bg-emerald-200/70 text-emerald-950 text-[9px] font-semibold px-1.5 py-0.5 rounded">
+                  Fallback: Web Audio API Klatt Formant DSP (&lt;400ms)
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Bottom Row: 3 Layer Approach + Github / Demo Links (Split Footer) -->
+        <div class="grid grid-cols-12 gap-3 pt-3">
+          
+          <!-- 3 Layer Approach (8 Cols) -->
+          <div class="col-span-7 flex flex-col justify-center">
+            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wide mb-1">
+              3 LAYER APPROACH
+            </h3>
+            <div class="space-y-1">
+              <div class="bg-slate-700 text-white text-[10px] font-bold px-3 py-1 rounded shadow-xs flex justify-between">
+                <span>Layer 1: Interactive Application UI</span>
+                <span class="text-slate-300 font-normal">React 18 • Canvas Slate • Worksheets</span>
+              </div>
+              <div class="bg-teal-700 text-white text-[10px] font-bold px-3 py-1 rounded shadow-xs flex justify-between">
+                <span>Layer 2: In-Memory TS Linguistic Engine</span>
+                <span class="text-teal-200 font-normal">NLP Lexicon • Clitics • Klatt Formant DSP</span>
+              </div>
+              <div class="bg-emerald-700 text-white text-[10px] font-bold px-3 py-1 rounded shadow-xs flex justify-between">
+                <span>Layer 3: Offline-First PWA Storage</span>
+                <span class="text-emerald-200 font-normal">Service Worker (sw.js) • Cache API</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Links Box (5 Cols) -->
+          <div class="col-span-5 bg-blue-50/90 border-2 border-blue-400 rounded-xl p-2.5 flex flex-col justify-center shadow-sm">
+            <div class="text-[11px] font-bold text-slate-800">
+              <span class="font-extrabold text-blue-900">GitHub Repository:</span>
+              <div class="text-blue-600 font-semibold underline truncate text-[10px] mt-0.5">
+                https://github.com/sangsaist/PALASH-Vani.git
+              </div>
+            </div>
+            <div class="text-[11px] font-bold text-slate-800 mt-2">
+              <span class="font-extrabold text-emerald-800">Live PWA Demo:</span>
+              <div class="text-emerald-600 font-semibold underline truncate text-[10px] mt-0.5">
+                https://palash-vani.web.app
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>
