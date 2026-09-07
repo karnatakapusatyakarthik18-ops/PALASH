@@ -16,17 +16,14 @@ const fs = require('fs');
 let mainWindow = null;
 
 function createWindow() {
-  const iconPath = path.join(__dirname, '../dist/logo.svg');
-
   mainWindow = new BrowserWindow({
     width: 1300,
     height: 880,
     minWidth: 960,
     minHeight: 640,
     title: 'PALASH Vani — Autonomous Offline Multilingual EdTech Suite',
-    icon: fs.existsSync(iconPath) ? iconPath : undefined,
     backgroundColor: '#064e3b', // Brand emerald theme to prevent white flash
-    show: false,
+    show: true,
     autoHideMenuBar: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -41,12 +38,29 @@ function createWindow() {
 
   // 1. Load production build DIRECTLY from local filesystem (Zero localhost!)
   const indexPath = path.join(__dirname, '../dist/index.html');
+  console.log('[PALASH DESKTOP] Loading offline index.html from:', indexPath);
   mainWindow.loadFile(indexPath);
 
-  // Show window smoothly when rendered
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('[PALASH DESKTOP] Page loaded successfully via file:// protocol.');
+  });
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    console.error(`[PALASH DESKTOP] Failed to load: ${validatedURL} (${errorCode}: ${errorDescription})`);
+  });
+
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    mainWindow.focus();
   });
+
+  // Fail-safe visibility check
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  }, 250);
 
   // 2. Intercept new windows & links (Never load external content inside the app)
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {

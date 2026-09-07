@@ -67,15 +67,18 @@ async function buildDesktopPackage() {
   // Rename electron.exe to "PALASH Vani.exe"
   const defaultExe = path.join(UNPACKED_DIR, 'electron.exe');
   const targetExe = path.join(UNPACKED_DIR, 'PALASH Vani.exe');
-  if (fs.existsSync(defaultExe) && !fs.existsSync(targetExe)) {
+  if (fs.existsSync(defaultExe)) {
     fs.copyFileSync(defaultExe, targetExe);
+    fs.unlinkSync(defaultExe); // Keep only PALASH Vani.exe
   } else if (!fs.existsSync(targetExe)) {
     fs.copyFileSync(path.join(ELECTRON_DIST, 'electron.exe'), targetExe);
   }
 
-  // Copy standard resources.pak if missing
-  const defaultResourcesPak = path.join(ELECTRON_DIST, 'resources', 'default_app.asar');
-  // We do not want default_app.asar since we provide our own app.asar
+  // Ensure default_app.asar is removed so Electron uses our app.asar exclusively
+  const staleDefaultApp = path.join(RESOURCES_DIR, 'default_app.asar');
+  if (fs.existsSync(staleDefaultApp)) {
+    fs.unlinkSync(staleDefaultApp);
+  }
 
   // 4. Stage application code for packaging
   console.log('[2/4] Assembling production assets, NLP engine, and offline datasets...');
