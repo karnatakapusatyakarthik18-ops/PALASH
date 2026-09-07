@@ -24,12 +24,26 @@ export type UserRole = 'all' | 'teacher' | 'student';
 
 export const App: React.FC = () => {
   const { themeConfig } = useTheme();
-  const [currentTab, setCurrentTab] = useState<string>('home');
+  const [currentTab, setCurrentTab] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam) return tabParam;
+    }
+    return 'home';
+  });
   const [targetLang, setTargetLang] = useState<TribalLanguage>('santhali');
   const [isOffline, setIsOffline] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<UserRole>('all');
   const [appLang, setAppLang] = useState<AppLanguage>('hi'); // Hindi is primary by default
-  const [showWelcome, setShowWelcome] = useState<boolean>(true); // Welcoming intro page on launch
+  const [showWelcome, setShowWelcome] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('tab')) return false;
+      if (sessionStorage.getItem('palash_welcomed')) return false;
+    }
+    return true;
+  });
 
   const t = translations[appLang];
 
@@ -38,7 +52,10 @@ export const App: React.FC = () => {
       {/* Interactive Welcome / Intro Modal Screen */}
       <WelcomeScreen
         isOpen={showWelcome}
-        onClose={() => setShowWelcome(false)}
+        onClose={() => {
+          setShowWelcome(false);
+          sessionStorage.setItem('palash_welcomed', 'true');
+        }}
         appLang={appLang}
         setAppLang={setAppLang}
         userRole={userRole}

@@ -1,7 +1,10 @@
 {
+  "id": "palash-vani-pwa",
   "short_name": "पलाश वाणी",
-  "name": "PALASH Vani - MTB-MLE Primary Education Suite",
-  "description": "AI-Assisted Translation & Curriculum Generation for Ho, Mundari, and Santhali Primary Classrooms",
+  "name": "PALASH Vani - AI-Assisted MTB-MLE Suite",
+  "description": "100% Offline AI-Assisted Voice Translation, Kaggle Flashcards, and Primary Education Suite for Santhali, Ho, and Mundari",
+  "lang": "hi",
+  "dir": "ltr",
   "icons": [
     {
       "src": "./logo.svg",
@@ -11,9 +14,40 @@
     }
   ],
   "start_url": "./",
-  "background_color": "#faf8f5",
-  "theme_color": "#ea580c",
+  "scope": "./",
+  "background_color": "#f4f9f6",
+  "theme_color": "#064e3b",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "categories": ["education", "productivity", "utilities"]
+  "orientation": "any",
+  "categories": ["education", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "द्वि-मार्गी ध्वनि अनुवाद (Voice Translator)",
+      "short_name": "ध्वनि अनुवाद",
+      "description": "100% ऑफ़लाइन रियल-टाइम ध्वनि अनुवाद एवं वाचन",
+      "url": "./?tab=v2v",
+      "icons": [{ "src": "./logo.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "फ़्लैशकार्ड स्टूडियो (Kaggle Datasets)",
+      "short_name": "फ़्लैशकार्ड",
+      "description": "Kaggle सत्यापित डेटासेट से सृजित सचित्र फ़्लैशकार्ड",
+      "url": "./?tab=flashcards",
+      "icons": [{ "src": "./logo.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "डिजिटल स्लेट (Digital Slate)",
+      "short_name": "डिजिटल स्लेट",
+      "description": "मातृभाषा लिपि ट्रेसिंग एवं लेखन अभ्यास",
+      "url": "./?tab=slate",
+      "icons": [{ "src": "./logo.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "ध्वन्यात्मक खेल (Phonics Game)",
+      "short_name": "ध्वनि खेल",
+      "description": "FLN एवं NIPUN भारत आधारित ऑडियो क्विज़",
+      "url": "./?tab=game",
+      "icons": [{ "src": "./logo.svg", "sizes": "192x192" }]
+    }
+  ]
 }
