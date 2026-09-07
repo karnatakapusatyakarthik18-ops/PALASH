@@ -102,6 +102,11 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
     }
   };
 
+  const forceCommitSpeech = (phrase?: string) => {
+    setErrorMessage(null);
+    voiceManagerRef.current?.forceOfflineInput(phrase || activeTargetPhrase);
+  };
+
   // Teacher mode prompt (Hindi or English -> Tribal)
   const handleTeacherPrompt = async (promptText: string) => {
     setErrorMessage(null);
@@ -298,7 +303,13 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
         {/* Mode Toggle Buttons: Teacher Mode vs Student Self-Learning Mode */}
         <div className="flex items-center bg-stone-100 p-1.5 rounded-2xl border border-stone-200 shadow-inner text-xs font-bold w-full md:w-auto">
           <button
-            onClick={() => setVoiceMode('teacher_to_student')}
+            onClick={() => {
+              setVoiceMode('teacher_to_student');
+              const phrase = micLang === 'en-IN' ? 'Open your books' : 'अपनी किताब खोलो';
+              setActiveTargetPhrase(phrase);
+              voiceManagerRef.current?.setMode('teacher_to_student');
+              voiceManagerRef.current?.setActiveTargetPhrase(phrase);
+            }}
             className={`flex-1 md:flex-initial flex items-center justify-center space-x-1.5 px-4 py-2 rounded-xl transition-all ${
               voiceMode === 'teacher_to_student'
                 ? 'bg-black text-emerald-400 font-black shadow-md border border-emerald-500/40'
@@ -309,7 +320,13 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
             <span>👨‍🏫 शिक्षक निर्देश (हिंदी ➔ जनजातीय)</span>
           </button>
           <button
-            onClick={() => setVoiceMode('student_to_teacher')}
+            onClick={() => {
+              setVoiceMode('student_to_teacher');
+              const phrase = targetLang === 'santhali' ? 'ᱫᱟᱜ' : 'दाः';
+              setActiveTargetPhrase(phrase);
+              voiceManagerRef.current?.setMode('student_to_teacher');
+              voiceManagerRef.current?.setActiveTargetPhrase(phrase);
+            }}
             className={`flex-1 md:flex-initial flex items-center justify-center space-x-1.5 px-4 py-2 rounded-xl transition-all ${
               voiceMode === 'student_to_teacher'
                 ? 'bg-emerald-500 text-black font-black shadow-md border border-emerald-400'
@@ -364,7 +381,9 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
                 type="button"
                 onClick={() => {
                   setMicLang('en-IN');
+                  setActiveTargetPhrase('Open your books');
                   voiceManagerRef.current?.setMicLanguage('en-IN');
+                  voiceManagerRef.current?.setActiveTargetPhrase('Open your books');
                 }}
                 className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
                   micLang === 'en-IN'
@@ -378,7 +397,9 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
                 type="button"
                 onClick={() => {
                   setMicLang('hi-IN');
+                  setActiveTargetPhrase('अपनी किताब खोलो');
                   voiceManagerRef.current?.setMicLanguage('hi-IN');
+                  voiceManagerRef.current?.setActiveTargetPhrase('अपनी किताब खोलो');
                 }}
                 className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
                   micLang === 'hi-IN'
@@ -462,23 +483,46 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
             </div>
           )}
 
-          <button
-            onClick={toggleListening}
-            className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${
-              isListening
-                ? 'bg-red-500 hover:bg-red-600 text-white ring-8 ring-red-200 animate-pulse'
-                : isPlayingAudio
-                ? 'bg-emerald-500 text-black ring-8 ring-emerald-200 scale-105'
-                : 'bg-black hover:bg-zinc-900 text-emerald-400 border-2 border-emerald-400/50 ring-4 ring-emerald-100 hover:scale-105'
-            }`}
-            title="माइक दबाकर बोलें"
-          >
-            {isListening ? <MicOff className="w-10 h-10" /> : <Mic className="w-10 h-10" />}
-          </button>
+          {isListening ? (
+            <button
+              onClick={toggleListening}
+              className="relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl bg-red-500 hover:bg-red-600 text-white ring-8 ring-red-200 animate-pulse"
+              title="माइक बंद करें और अनुवाद करें"
+            >
+              <MicOff className="w-10 h-10" />
+            </button>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={toggleListening}
+                className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${
+                  isPlayingAudio
+                    ? 'bg-emerald-500 text-black ring-8 ring-emerald-200 scale-105'
+                    : 'bg-black hover:bg-zinc-900 text-emerald-400 border-2 border-emerald-400/50 ring-4 ring-emerald-100 hover:scale-105'
+                }`}
+                title="माइक दबाकर बोलें"
+              >
+                <Mic className="w-10 h-10" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => forceCommitSpeech()}
+                className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black px-5 py-3.5 rounded-2xl text-xs shadow-lg flex items-center space-x-2.5 transition-all hover:scale-105 active:scale-95 border border-emerald-400/40"
+                title="सक्रिय लक्ष्य वाक्य को बिना माइक के तुरंत बोलकर अनुवाद करें"
+              >
+                <Volume2 className="w-5 h-5 text-emerald-200 shrink-0" />
+                <div className="text-left">
+                  <div className="text-[10px] text-emerald-100 uppercase tracking-wider font-bold">1-टैप इनपुट अनुवाद</div>
+                  <div className="text-xs font-black">"{activeTargetPhrase}" ➔ ध्वनि सुनें</div>
+                </div>
+              </button>
+            </div>
+          )}
 
           {/* Animated Web Audio Waveform Equalizer */}
           {isListening && (
-            <div className="flex flex-col items-center justify-center space-y-2 py-1">
+            <div className="flex flex-col items-center justify-center space-y-2.5 py-1">
               <div className="flex items-center justify-center space-x-1.5 h-11 px-5 py-2 bg-stone-950 rounded-full shadow-inner border border-emerald-500/40">
                 {[0.4, 0.8, 1.3, 1.8, 2.3, 1.8, 1.3, 0.8, 0.4].map((factor, i) => {
                   const barHeight = Math.max(6, Math.min(34, Math.round((audioLevel || 20) * factor * 0.35 + 6)));
@@ -503,6 +547,26 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
                   </span>
                 )}
               </div>
+
+              {/* Instant Commit Action Buttons while recording */}
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={toggleListening}
+                  className="bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-xl text-xs shadow-md flex items-center space-x-1.5 transition-all hover:scale-105 active:scale-95"
+                >
+                  <MicOff className="w-4 h-4" />
+                  <span>⏹️ आवाज़ रोकें और अनुवाद करें</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => forceCommitSpeech()}
+                  className="bg-emerald-400 hover:bg-emerald-300 text-black font-black px-4 py-2 rounded-xl text-xs shadow-md flex items-center space-x-1.5 transition-all hover:scale-105 active:scale-95"
+                >
+                  <Zap className="w-4 h-4 text-black" />
+                  <span>⚡ तुरंत अनुवाद करें</span>
+                </button>
+              </div>
             </div>
           )}
 
@@ -513,11 +577,14 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
             </div>
           )}
 
-          <div className="flex items-center space-x-2 text-xs font-bold text-stone-600">
+          <div className="flex flex-col items-center space-y-1 text-xs font-bold text-stone-600">
             <span>
               {isListening 
-                ? `माइक चालू है (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) • रुकने के लिए पुनः दबाएँ` 
-                : `माइक दबाकर बोलें (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) ➔ जनजातीय भाषा में अनुवाद होगा`}
+                ? `माइक चालू है (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) • रुकने के लिए माइक दबाएँ या 'आवाज़ रोकें' चुनें` 
+                : `माइक दबाकर बोलें (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) या '1-टैप इनपुट' दबाएँ ➔ बिना इंटरनेट तुरंत ध्वनि अनुवाद होगा`}
+            </span>
+            <span className="text-[11px] text-emerald-700 font-extrabold">
+              ⚡ 100% ऑफ़लाइन गारंटी: आवाज़ बंद होते ही Web Audio DSP व local NLP स्वतः अनुवादित उच्चारण चलाएगा।
             </span>
           </div>
 

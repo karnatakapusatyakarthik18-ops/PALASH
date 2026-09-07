@@ -117,6 +117,22 @@ assert(munLesson.devanagariPhonetic.includes('होनको') && (munLesson.de
 const tLesson5 = PalashNLPTranslator.translate('हम रोज स्कूल जाते हैं', 'santhali');
 assert(tLesson5.targetText.includes('ᱟᱥᱲᱟ') || tLesson5.targetText.includes('ᱫᱤᱱᱟᱹᱢ'), 'Lesson 5 contains Ol Chiki asra or dinam', tLesson5);
 
+// Test 21: Student Prompt Label with Parentheses "ᱫᱟᱜ (दाग)" -> Hindi "पानी"
+const tStudentParen = PalashNLPTranslator.translateTribalToHindi('ᱫᱟᱜ (दाग)', 'santhali');
+assert(tStudentParen.hindiText === 'पानी', 'Reverse translation of "ᱫᱟᱜ (दाग)" correctly resolves to "पानी"', tStudentParen);
+
+// Test 22: Student Action Label "ᱫᱩᱲᱩᱵᱽ (दुड़ुब)" -> Hindi "बैठो"
+const tStudentAction = PalashNLPTranslator.translateTribalToHindi('ᱫᱩᱲᱩᱵᱽ (दुड़ुब)', 'santhali');
+assert(tStudentAction.hindiText.includes('बैठ'), 'Reverse translation of "ᱫᱩᱲᱩᱵᱽ (दुड़ुब)" correctly contains "बैठ"', tStudentAction);
+
+// Test 23: Direct Hindi reverse fallback "पानी" -> Hindi "पानी"
+const tDirectHindi = PalashNLPTranslator.translateTribalToHindi('पानी', 'santhali');
+assert(tDirectHindi.hindiText === 'पानी', 'Direct Hindi input "पानी" returns "पानी"', tDirectHindi);
+
+// Test 24: Ho language label with parentheses "दाः (दाह)" -> Hindi "पानी"
+const tHoStudent = PalashNLPTranslator.translateTribalToHindi('दाः (दाह)', 'ho');
+assert(tHoStudent.hindiText === 'पानी', 'Ho reverse translation of "दाः (दाह)" returns "पानी"', tHoStudent);
+
 console.log("\n-------------------------------------------------");
 console.log(`Verification Summary: ${passed} / ${total} Tests Passed (${Math.round(passed/total*100)}%)`);
 console.log("-------------------------------------------------");

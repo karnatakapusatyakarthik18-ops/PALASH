@@ -705,13 +705,19 @@ export class PalashNLPTranslator {
     original: string;
   } {
     const cleaned = tribalText.trim().toLowerCase();
+    const baseText = cleaned.split(/[\(\[\{]/)[0].trim();
     const lexicon = this.lexicons[sourceLang];
 
     // 1. Exact match first
     const exactMatch = lexicon.find(item => 
       item.targetText.toLowerCase() === cleaned ||
+      item.targetText.toLowerCase() === baseText ||
       item.devanagariPhonetic.toLowerCase() === cleaned ||
-      item.englishPhonetic.toLowerCase() === cleaned
+      item.devanagariPhonetic.toLowerCase() === baseText ||
+      item.englishPhonetic.toLowerCase() === cleaned ||
+      item.englishPhonetic.toLowerCase() === baseText ||
+      item.hindi.toLowerCase() === cleaned ||
+      item.hindi.toLowerCase() === baseText
     );
 
     if (exactMatch) {
@@ -724,12 +730,14 @@ export class PalashNLPTranslator {
 
     // 2. Substring match
     const match = lexicon.find(item => 
-      item.targetText.toLowerCase().includes(cleaned) ||
-      cleaned.includes(item.targetText.toLowerCase()) ||
-      item.devanagariPhonetic.toLowerCase().includes(cleaned) ||
-      cleaned.includes(item.devanagariPhonetic.toLowerCase()) ||
-      item.englishPhonetic.toLowerCase().includes(cleaned) ||
-      cleaned.includes(item.englishPhonetic.toLowerCase())
+      item.targetText.toLowerCase().includes(baseText) ||
+      baseText.includes(item.targetText.toLowerCase()) ||
+      item.devanagariPhonetic.toLowerCase().includes(baseText) ||
+      baseText.includes(item.devanagariPhonetic.toLowerCase()) ||
+      item.englishPhonetic.toLowerCase().includes(baseText) ||
+      baseText.includes(item.englishPhonetic.toLowerCase()) ||
+      item.hindi.toLowerCase().includes(baseText) ||
+      baseText.includes(item.hindi.toLowerCase())
     );
 
     if (match) {
