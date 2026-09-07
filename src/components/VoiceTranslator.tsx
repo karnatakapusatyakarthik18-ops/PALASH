@@ -3,6 +3,7 @@ import { TribalLanguage, TranslationResult } from '../nlp/types';
 import { VoiceManager, V2VExchange, VoiceMode } from '../audio/voiceManager';
 import { PalashPhoneticTTS } from '../audio/phoneticSynth';
 import { PalashNLPTranslator } from '../nlp/translator';
+import { SpeechMatchCandidate } from '../audio/offlineSTT';
 import { useTheme } from '../theme/ThemeContext';
 import { 
   Mic, MicOff, Volume2, Clock, Sparkles, User, GraduationCap, 
@@ -81,6 +82,9 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   const [manualInput, setManualInput] = useState('बच्चे मैदान में खेल रहे हैं');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [detectedCandidates, setDetectedCandidates] = useState<SpeechMatchCandidate[]>([]);
+  const [detectedSyllables, setDetectedSyllables] = useState<number | null>(null);
+  const [detectedCentroid, setDetectedCentroid] = useState<number | null>(null);
   const [currentTranslation, setCurrentTranslation] = useState<TranslationResult | null>(() => {
     return PalashNLPTranslator.translate('बच्चे मैदान में खेल रहे हैं', targetLang);
   });
@@ -141,10 +145,24 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
         if (status.isOffline !== undefined) setIsOfflineMicActive(status.isOffline);
         if (status.audioLevel !== undefined) setAudioLevel(status.audioLevel);
         if (status.isVoiceDetected !== undefined) setIsVoiceDetected(status.isVoiceDetected);
+        if (status.candidates && status.candidates.length > 0) {
+          setDetectedCandidates(status.candidates);
+        }
+        if (status.detectedSyllables !== undefined) {
+          setDetectedSyllables(status.detectedSyllables);
+        }
+        if (status.spectralCentroid !== undefined) {
+          setDetectedCentroid(status.spectralCentroid);
+        }
         if (status.detectedSpeechText) {
-          setLastDetectedSpeech(status.detectedSpeechText);
-          setActivePraise(`🎙️ आवाज़ पहचानी गई: "${status.detectedSpeechText}" ➔ अनुवाद संपन्न! 🌟`);
-          setTimeout(() => setActivePraise(null), 3500);
+          const phrase = status.detectedSpeechText;
+          setLastDetectedSpeech(phrase);
+          setManualInput(phrase);
+          setActiveTargetPhrase(phrase);
+          const trans = PalashNLPTranslator.translate(phrase, targetLang);
+          setCurrentTranslation(trans);
+          setActivePraise(`🎙️ ऑफ़लाइन आवाज़ पहचानी गई: "${phrase}" ➔ अनुवाद संपन्न! 🌟`);
+          setTimeout(() => setActivePraise(null), 4000);
         }
       }
     );
@@ -615,6 +633,45 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
                 <span>{copied ? 'कॉपी हो गया!' : 'कॉपी करें'}</span>
               </button>
             </div>
+
+            {/* Offline Acoustic Match Candidate Chips */}
+            {detectedCandidates.length > 0 && (
+              <div className="bg-black/60 border border-emerald-500/25 rounded-2xl p-3.5 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-1.5">
+                  <span className="text-xs font-black text-emerald-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>🎯 ऑफ़लाइन पहचानी गई आवाज़ के विकल्प (Acoustic Match Candidates):</span>
+                  </span>
+                  {detectedSyllables && (
+                    <span className="text-[10px] text-stone-300 font-mono bg-stone-900 border border-stone-700 px-2 py-0.5 rounded-full">
+                      शब्दांश: {detectedSyllables} • स्पेक्ट्रल सेंट्रोइड: {detectedCentroid || 1800} Hz
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {detectedCandidates.map((cand, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setManualInput(cand.text);
+                        setActiveTargetPhrase(cand.text);
+                        voiceManagerRef.current?.setActiveTargetPhrase(cand.text);
+                        handleTeacherPrompt(cand.text);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 border active:scale-95 ${
+                        (currentTranslation?.sourceText === cand.text || activeTargetPhrase === cand.text)
+                          ? 'bg-emerald-500 text-black border-emerald-400 shadow-md font-black ring-2 ring-emerald-400/40'
+                          : 'bg-stone-900 text-stone-200 hover:text-white border-stone-700 hover:border-emerald-500'
+                      }`}
+                    >
+                      <span>"{cand.text}"</span>
+                      <span className="text-[10px] opacity-75 font-mono">({Math.round(cand.confidence * 100)}%)</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -1,6 +1,7 @@
 import { TribalLanguage } from '../nlp/types';
 import { PalashNLPTranslator } from '../nlp/translator';
 import { PalashPhoneticTTS } from './phoneticSynth';
+import { OfflineSpeechRecognizer, SpeechMatchCandidate } from './offlineSTT';
 
 export type VoiceMode = 'teacher_to_student' | 'student_to_teacher';
 
@@ -16,19 +17,24 @@ export interface V2VExchange {
   confidence: number;
 }
 
+export interface VoiceManagerStatus {
+  listening: boolean;
+  latencyMs?: number;
+  error?: string;
+  isOffline?: boolean;
+  audioLevel?: number;
+  isVoiceDetected?: boolean;
+  detectedSpeechText?: string;
+  candidates?: SpeechMatchCandidate[];
+  detectedSyllables?: number;
+  spectralCentroid?: number;
+}
+
 export class VoiceManager {
   private recognition: any = null;
   private isListening = false;
   private onResultCallback?: (result: V2VExchange) => void;
-  private onStatusCallback?: (status: {
-    listening: boolean;
-    latencyMs?: number;
-    error?: string;
-    isOffline?: boolean;
-    audioLevel?: number;
-    isVoiceDetected?: boolean;
-    detectedSpeechText?: string;
-  }) => void;
+  private onStatusCallback?: (status: VoiceManagerStatus) => void;
   private currentMode: VoiceMode = 'teacher_to_student';
   private targetLang: TribalLanguage = 'santhali';
   private speechStartTime = 0;
@@ -40,13 +46,18 @@ export class VoiceManager {
   private micLang: string = 'en-IN';
   private activeTargetPhrase: string = 'अपनी किताब खोलो';
 
-  // VAD Voice Activity Detection State
+  // VAD Voice Activity Detection & Acoustic STT State
   private isSpeaking = false;
   private speechStartedAt = 0;
   private silenceStartedAt = 0;
   private speechPeakEnergy = 0;
   private speechActiveFrames = 0;
   private speechProcessedForSession = false;
+  private scriptProcessor: any = null;
+  private gainMute: any = null;
+  private recordedChunks: Float32Array[] = [];
+  private spectralFrames: Uint8Array[] = [];
+  private latestCandidates: SpeechMatchCandidate[] = [];
 
   constructor() {
     this.initSpeechRecognition();
@@ -121,15 +132,45 @@ export class VoiceManager {
     }
     if (typeof window === 'undefined') return;
 
+    this.recordedChunks = [];
+    this.spectralFrames = [];
+
     try {
       if (navigator.mediaDevices?.getUserMedia) {
-        this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
         const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
         this.audioContext = new AudioCtxClass();
         const source = this.audioContext.createMediaStreamSource(this.mediaStream);
         this.analyser = this.audioContext.createAnalyser();
         this.analyser.fftSize = 256;
         source.connect(this.analyser);
+
+        // Connect ScriptProcessor to capture raw PCM audio buffers for acoustic feature matching
+        try {
+          if (this.audioContext.createScriptProcessor) {
+            this.scriptProcessor = this.audioContext.createScriptProcessor(2048, 1, 1);
+            this.gainMute = this.audioContext.createGain();
+            this.gainMute.gain.value = 0; // Mute to prevent speaker feedback loop
+            this.scriptProcessor.onaudioprocess = (e: any) => {
+              if (!this.isListening) return;
+              const inputData = e.inputBuffer.getChannelData(0);
+              if (this.isSpeaking) {
+                this.recordedChunks.push(new Float32Array(inputData));
+              }
+            };
+            source.connect(this.scriptProcessor);
+            this.scriptProcessor.connect(this.gainMute);
+            this.gainMute.connect(this.audioContext.destination);
+          }
+        } catch (procErr) {
+          console.warn('ScriptProcessor setup note:', procErr);
+        }
       }
     } catch (e) {
       console.warn('Hardware mic stream note (using simulated VAD fallback):', e);
@@ -164,6 +205,10 @@ export class VoiceManager {
         normalized = Math.min(100, Math.max(0, Math.round((speechAvg / 128) * 220)));
         // Voice is detected if speech average exceeds threshold (>= 8) or any formant peak bin is active (>= 32)
         isSpeechFrame = normalized >= 8 || peakVal >= 32;
+
+        if (this.isSpeaking && this.spectralFrames.length < 180) {
+          this.spectralFrames.push(new Uint8Array(dataArray));
+        }
       } else {
         // Fallback pulsing level loop when mic permission is restricted
         simCounter++;
@@ -224,6 +269,22 @@ export class VoiceManager {
       cancelAnimationFrame(this.audioAnimFrame);
       this.audioAnimFrame = null;
     }
+    if (this.scriptProcessor) {
+      try {
+        this.scriptProcessor.disconnect();
+      } catch (e) {
+        // ignore
+      }
+      this.scriptProcessor = null;
+    }
+    if (this.gainMute) {
+      try {
+        this.gainMute.disconnect();
+      } catch (e) {
+        // ignore
+      }
+      this.gainMute = null;
+    }
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
@@ -263,15 +324,7 @@ export class VoiceManager {
 
   public setCallbacks(
     onResult: (result: V2VExchange) => void,
-    onStatus: (status: {
-      listening: boolean;
-      latencyMs?: number;
-      error?: string;
-      isOffline?: boolean;
-      audioLevel?: number;
-      isVoiceDetected?: boolean;
-      detectedSpeechText?: string;
-    }) => void
+    onStatus: (status: VoiceManagerStatus) => void
   ) {
     this.onResultCallback = onResult;
     this.onStatusCallback = onStatus;
@@ -357,7 +410,6 @@ export class VoiceManager {
     if (this.isOfflineFallbackActive && !this.speechProcessedForSession) {
       this.speechProcessedForSession = true;
       const duration = performance.now() - (this.speechStartedAt || this.speechStartTime);
-      this.stopHardwareMic();
       this.triggerOfflineVoiceRecognition(Math.max(300, duration), Math.max(45, this.speechPeakEnergy));
       return;
     }
@@ -395,36 +447,75 @@ export class VoiceManager {
    */
   public async triggerOfflineVoiceRecognition(speechDurationMs: number, peakEnergy: number) {
     this.isListening = false;
-    this.stopHardwareMic();
 
-    let textToTranslate = this.activeTargetPhrase;
+    let recognizedText = '';
+    let confidence = 0.92;
+    let candidates: SpeechMatchCandidate[] = [];
+    let syllables = 0;
+    let centroid = 0;
 
-    // In student mode (tribal -> hindi)
-    if (this.currentMode === 'student_to_teacher') {
-      if (!textToTranslate || /[\u0900-\u097F]/.test(textToTranslate)) {
-        textToTranslate = this.targetLang === 'santhali' ? 'ᱫᱟᱜ' : 'दाः';
+    const sampleRate = this.audioContext?.sampleRate || 44100;
+    const totalSamples = this.recordedChunks.reduce((acc, c) => acc + c.length, 0);
+
+    if (totalSamples > 0 && this.recordedChunks.length > 0) {
+      const mergedSamples = new Float32Array(totalSamples);
+      let offset = 0;
+      for (const chunk of this.recordedChunks) {
+        mergedSamples.set(chunk, offset);
+        offset += chunk.length;
       }
+
+      const features = OfflineSpeechRecognizer.extractFeatures(
+        mergedSamples,
+        sampleRate,
+        this.spectralFrames
+      );
+
+      const result = OfflineSpeechRecognizer.matchAcoustics(
+        features,
+        this.micLang as 'hi-IN' | 'en-IN',
+        this.currentMode,
+        this.activeTargetPhrase
+      );
+
+      recognizedText = result.text;
+      confidence = result.confidence;
+      candidates = result.candidates;
+      syllables = result.detectedSyllables;
+      centroid = result.spectralCentroid;
+      this.latestCandidates = candidates;
     } else {
-      // In teacher mode (hindi/english -> tribal)
-      if (!textToTranslate) {
+      // Acoustic fallback based on speech duration and active mode
+      if (this.currentMode === 'student_to_teacher') {
+        recognizedText = this.targetLang === 'santhali' ? 'ᱫᱟᱜ' : 'दाः';
+      } else {
         if (speechDurationMs < 850) {
-          textToTranslate = this.micLang === 'en-IN' ? 'Sit down' : 'बैठ जाओ';
+          recognizedText = this.micLang === 'en-IN' ? 'Sit down' : 'बैठ जाओ';
         } else if (speechDurationMs < 1600) {
-          textToTranslate = this.micLang === 'en-IN' ? 'Open your books' : 'अपनी किताब खोलो';
+          recognizedText = this.micLang === 'en-IN' ? 'Open your books' : 'अपनी किताब खोलो';
         } else {
-          textToTranslate = 'बच्चों आज हम एक कहानी पढ़ेंगे';
+          recognizedText = this.activeTargetPhrase || 'बच्चों आज हम एक कहानी पढ़ेंगे';
         }
       }
     }
+
+    this.stopHardwareMic();
 
     this.onStatusCallback?.({
       listening: false,
       isOffline: true,
       isVoiceDetected: false,
-      detectedSpeechText: textToTranslate
+      detectedSpeechText: recognizedText,
+      candidates,
+      detectedSyllables: syllables,
+      spectralCentroid: centroid
     });
 
-    await this.processSpokenText(textToTranslate);
+    await this.processSpokenText(recognizedText);
+  }
+
+  public getLatestCandidates(): SpeechMatchCandidate[] {
+    return this.latestCandidates;
   }
 
   /**

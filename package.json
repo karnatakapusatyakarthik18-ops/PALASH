@@ -15,7 +15,7 @@
     "app": "electron .",
     "server": "node server.js",
     "preview": "vite preview",
-    "test": "npx tsx tests/verifyNLP.ts"
+    "test": "npx tsx tests/verifyNLP.ts && npx tsx tests/verifyOfflineSTT.ts"
   },
   "build": {
     "appId": "org.palash.vani",
