@@ -6,7 +6,8 @@ import { PalashNLPTranslator } from '../nlp/translator';
 import { useTheme } from '../theme/ThemeContext';
 import { 
   Mic, MicOff, Volume2, Clock, Sparkles, User, GraduationCap, 
-  BookOpen, CheckCircle2, ArrowRightLeft, Star, VolumeX 
+  BookOpen, CheckCircle2, ArrowRightLeft, Star, VolumeX,
+  Wifi, WifiOff, Activity, ShieldCheck, Zap
 } from 'lucide-react';
 
 interface VoiceTranslatorProps {
@@ -26,11 +27,24 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('teacher_to_student');
   const [micLang, setMicLang] = useState<'en-IN' | 'hi-IN'>('hi-IN');
   const [isListening, setIsListening] = useState(false);
+  const [audioLevel, setAudioLevel] = useState<number>(0);
+  const [isOfflineMicActive, setIsOfflineMicActive] = useState<boolean>(typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [lastLatencyMs, setLastLatencyMs] = useState<number | null>(320);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [activePraise, setActivePraise] = useState<string | null>(null);
   const [manualInput, setManualInput] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOfflineMicActive(false);
+    const handleOffline = () => setIsOfflineMicActive(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const [exchanges, setExchanges] = useState<V2VExchange[]>([
     {
@@ -38,7 +52,7 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
       mode: 'teacher_to_student',
       sourceText: 'नमस्ते बच्चों! सब अपनी जगह बैठ जाओ।',
       translatedText: targetLang === 'santhali' ? 'ᱡᱳᱦᱟᱨ ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ! ᱡᱚᱛᱚ ᱦᱚᱲ ᱫᱩᱲᱩᱵᱽ ᱯᱮ।' : (targetLang === 'ho' ? 'जोहार होनको! सबिन दुबेन।' : 'जोहार होनको! सबिन आपना ठांव रे दुबपे।'),
-      phoneticText: 'जोहार गिदरा को! जोतो होड़ दुड़ुब पे।',
+      phoneticText: 'जोहार गिदरा को! जोतो होड़ दुड़ुब पे.',
       englishPhonetic: 'Johar gidra ko! Joto hor durub pe.',
       latencyMs: 310,
       timestamp: '10:00 AM',
@@ -62,6 +76,8 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
         setIsListening(status.listening);
         if (status.latencyMs) setLastLatencyMs(status.latencyMs);
         if (status.error) setErrorMessage(status.error);
+        if (status.isOffline !== undefined) setIsOfflineMicActive(status.isOffline);
+        if (status.audioLevel !== undefined) setAudioLevel(status.audioLevel);
       }
     );
     voiceManagerRef.current = vm;
@@ -168,7 +184,7 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
     { text: 'पेड़ पर मीठे फल हैं', label: '🌳 पेड़ पर मीठे फल हैं (Sweet fruits on tree)' },
     { text: 'हम रोज स्कूल जाते हैं', label: '🏫 हम रोज स्कूल जाते हैं (Daily school)' },
     { text: 'सूरज सुबह पूर्व में उगता है', label: '☀️ सूरज सुबह पूर्व में उगता है (Sun rises in east)' },
-    // Core Classroom Instructions
+    // Core Classroom Instructions (Hindi)
     { text: 'अपनी किताब खोलो', label: 'अपनी किताब खोलो (Open books)' },
     { text: 'बैठ जाओ', label: 'बैठ जाओ (Sit down)' },
     { text: 'खड़े हो जाओ', label: 'खड़े हो जाओ (Stand up)' },
@@ -176,7 +192,13 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
     { text: 'यह क्या है?', label: 'यह क्या है? (What is this?)' },
     { text: 'पानी पियो', label: 'पानी पियो (Drink water)' },
     { text: 'नमस्ते बच्चों', label: 'नमस्ते बच्चों (Hello)' },
-    { text: 'बहुत अच्छा!', label: 'बहुत अच्छा! (Very good)' }
+    { text: 'बहुत अच्छा!', label: 'बहुत अच्छा! (Very good)' },
+    // Bilingual English Prompts
+    { text: 'Open your books', label: '🌐 Open your books' },
+    { text: 'Sit down', label: '🌐 Sit down' },
+    { text: 'Stand up', label: '🌐 Stand up' },
+    { text: 'Drink water', label: '🌐 Drink water' },
+    { text: 'Listen carefully', label: '🌐 Listen carefully' }
   ];
 
   const getStudentPrompts = (): StudentPrompt[] => {
@@ -242,9 +264,22 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
             <h3 className="font-extrabold text-stone-900 text-sm md:text-base">
               द्वि-मार्गी ध्वनि अनुवाद (2-Way Real-Time Voice Translation)
             </h3>
-            <p className="text-xs text-stone-500">
-              लेटेंसी: <strong className="text-emerald-700 font-mono text-sm">{lastLatencyMs ? `${lastLatencyMs} ms` : 'तैयार'}</strong> • 100% ऑफ़लाइन Web Audio DSP
-            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-xs text-stone-500">
+                लेटेंसी: <strong className="text-emerald-700 font-mono text-sm">{lastLatencyMs ? `${lastLatencyMs} ms` : 'तैयार'}</strong> • 100% ऑफ़लाइन Web Audio DSP
+              </p>
+              {isOfflineMicActive ? (
+                <span className="inline-flex items-center space-x-1 bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full text-[10px] font-black">
+                  <WifiOff className="w-3 h-3 text-amber-700" />
+                  <span>100% ऑफ़लाइन</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center space-x-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-black">
+                  <Wifi className="w-3 h-3 text-emerald-600" />
+                  <span>हाइब्रिड / ऑफ़लाइन रेडी</span>
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -357,6 +392,33 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
           >
             {isListening ? <MicOff className="w-10 h-10" /> : <Mic className="w-10 h-10" />}
           </button>
+
+          {/* Animated Web Audio Waveform Equalizer */}
+          {isListening && (
+            <div className="flex flex-col items-center justify-center space-y-2 py-1">
+              <div className="flex items-center justify-center space-x-1.5 h-11 px-5 py-2 bg-stone-950 rounded-full shadow-inner border border-emerald-500/40">
+                {[0.4, 0.8, 1.3, 1.8, 2.3, 1.8, 1.3, 0.8, 0.4].map((factor, i) => {
+                  const barHeight = Math.max(6, Math.min(34, Math.round((audioLevel || 20) * factor * 0.35 + 6)));
+                  return (
+                    <span
+                      key={i}
+                      className="w-1.5 bg-gradient-to-t from-emerald-600 via-emerald-400 to-teal-200 rounded-full transition-all duration-75"
+                      style={{ height: `${barHeight}px` }}
+                    />
+                  );
+                })}
+              </div>
+              <div className="flex items-center space-x-2 text-[11px] font-bold text-emerald-800">
+                <Activity className="w-3.5 h-3.5 animate-pulse text-emerald-600" />
+                <span>
+                  {audioLevel > 15
+                    ? `ध्वनि पहचानी जा रही है (माइक आयाम: ${audioLevel}%)`
+                    : `माइक सुन रहा है... (माइक आयाम: ${audioLevel}%)`}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center space-x-2 text-xs font-bold text-stone-600">
             <span>
               {isListening 
@@ -364,10 +426,29 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
                 : `माइक दबाकर बोलें (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) ➔ जनजातीय भाषा में अनुवाद होगा`}
             </span>
           </div>
+
+          {/* 100% Offline Edge Mode Alert / Info Banner */}
+          {isOfflineMicActive && (
+            <div className="bg-gradient-to-r from-emerald-950 to-stone-900 text-white border border-emerald-500/40 rounded-2xl p-3.5 max-w-xl mx-auto text-xs space-y-1 text-left shadow-md">
+              <div className="flex items-center space-x-2 text-emerald-300 font-black">
+                <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>100% ऑफ़लाइन रियल-टाइम वॉइस मोड सक्रिय (Zero Internet Required)</span>
+              </div>
+              <p className="text-[11px] text-stone-300 leading-relaxed">
+                यह प्रणाली पूरी तरह ऑफ़लाइन काम करती है: <strong>Web Audio API</strong> से हार्डवेयर माइक स्ट्रीम, <strong>इन-मेमोरी $O(1)$ लेक्सिकॉन</strong> से तत्काल अनुवाद, और <strong>Acoustic Formant Synthesizer</strong> से ध्वनि उच्चारण बिना इंटरनेट के चलता है।
+              </p>
+            </div>
+          )}
+
           {errorMessage && (
-            <p className="text-xs text-amber-800 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
-              {errorMessage} (आप नीचे दिए गए त्वरित बटनों से तुरंत ध्वनि सुन सकते हैं)
-            </p>
+            <div className="text-xs text-amber-900 bg-amber-50 px-4 py-2 rounded-xl border border-amber-300 max-w-xl mx-auto flex items-center gap-2 text-left">
+              <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span>
+                {errorMessage.includes('network') || errorMessage.includes('ऑफ़लाइन')
+                  ? '⚡ ऑफ़लाइन मोड: ब्राउज़र स्पीच क्लाउड अनुपलब्ध है। लोकल हार्डवेयर माइक एवं Web Audio इंजन सक्रिय है। नीचे दिए गए त्वरित बटनों से तुरंत ध्वनि सुनें!'
+                  : errorMessage}
+              </span>
+            </div>
           )}
         </div>
 
