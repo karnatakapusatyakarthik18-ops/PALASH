@@ -47,6 +47,12 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ currentLang })
               href="https://www.kaggle.com"
               target="_blank"
               rel="noreferrer"
+              onClick={(e) => {
+                if ((window as any).electronAPI?.openExternal) {
+                  e.preventDefault();
+                  (window as any).electronAPI.openExternal('https://www.kaggle.com');
+                }
+              }}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-xs font-semibold text-white transition-all shadow-sm backdrop-blur-sm"
             >
               <ExternalLink className="w-3.5 h-3.5" /> Kaggle Hub

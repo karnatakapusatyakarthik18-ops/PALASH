@@ -1,5 +1,5 @@
 @echo off
-title PALASH VANI - Offline Multilingual EdTech App
+title PALASH VANI - Offline Standalone Desktop Application
 color 0A
 cls
 
@@ -9,23 +9,30 @@ echo ===========================================================================
 echo   Problem Statement: Tribal Language Education Bridge (NEP 2020 / NIPUN Bharat)
 echo   Architecture: 100%% Offline Edge Intelligence (Zero Internet / 0 KB/s)
 echo   Target Scripts: Ol Chiki (Santhali), Warang Chiti / Devanagari (Ho, Mundari)
-echo   Engine: Web Audio DSP + Local n-gram / Morphological NLP + Speech Synthesizer
+echo   Runtime: Native Desktop Application Window (Zero localhost / Zero URL bar)
 echo ==============================================================================
 echo.
 
-:: 1. Check Node.js installation
+:: 1. If standalone packaged executable exists, launch directly (No Node.js needed!)
+if exist "%~dp0release\win-unpacked\PALASH Vani.exe" (
+    echo [*] Launching standalone native desktop executable...
+    start "" "%~dp0release\win-unpacked\PALASH Vani.exe"
+    exit /b 0
+)
+
+:: 2. Check Node.js installation
 where node >nul 2>&1
 if %errorlevel% neq 0 (
     color 0C
-    echo [ERROR] Node.js is not found in your system PATH!
+    echo [ERROR] Neither the packaged executable nor Node.js was found in PATH!
     echo Please install Node.js (v18 or higher) from https://nodejs.org
     echo.
     pause
     exit /b 1
 )
 
-:: 2. Check if production build exists, build if missing
-if not exist "dist\index.html" (
+:: 3. Check if production build exists, build if missing
+if not exist "%~dp0dist\index.html" (
     echo [*] Production build missing. Building production assets...
     call npm.cmd run build
     if %errorlevel% neq 0 (
@@ -36,10 +43,10 @@ if not exist "dist\index.html" (
     )
 )
 
-:: 3. Launch Standalone Node.js Application Mode
-echo [*] Starting Local Node Server and Launching Desktop App Window...
-echo [*] App Window: Native Desktop Mode (Borderless, Zero URL Bar, Zero Localhost Text)
+:: 4. Launch Desktop App directly via Electron
+echo [*] Launching Native Standalone Desktop Window...
+echo [*] Mode: File Protocol (file:///dist/index.html) - Zero Localhost / 100%% Offline
 echo.
-node server.js --open-app
+call npx.cmd electron .
 
 pause

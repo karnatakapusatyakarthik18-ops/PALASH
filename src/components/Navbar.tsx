@@ -217,15 +217,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Offline Mode Switcher */}
             <button
               onClick={() => setIsOffline(!isOffline)}
-              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg font-bold transition-all shadow-md ${
+              className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg font-black text-xs transition-all shadow-md ${
                 isOffline 
-                  ? 'bg-emerald-600 text-white border border-emerald-400 ring-2 ring-emerald-300/40' 
+                  ? 'bg-emerald-400 text-black border border-emerald-300 ring-2 ring-emerald-300/40' 
                   : 'bg-white/20 text-stone-100 hover:bg-white/30'
               }`}
-              title="100% ऑफ़लाइन मोड टॉगल करें"
+              title="100% ऑफ़लाइन मोड सक्रिय (Zero Internet Required)"
             >
-              {isOffline ? <WifiOff className="w-3.5 h-3.5 text-emerald-200" /> : <Wifi className="w-3.5 h-3.5" />}
-              <span>{isOffline ? t.offlineMode : t.onlineMode}</span>
+              <span className={`w-2 h-2 rounded-full ${isOffline ? 'bg-emerald-950 animate-pulse' : 'bg-emerald-400'}`}></span>
+              {isOffline ? <WifiOff className="w-3.5 h-3.5 text-emerald-950" /> : <Wifi className="w-3.5 h-3.5" />}
+              <span>{isOffline ? '100% OFFLINE READY' : t.onlineMode}</span>
             </button>
           </div>
         </div>

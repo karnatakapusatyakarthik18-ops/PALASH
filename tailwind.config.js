@@ -33,8 +33,8 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        olchiki: ['"Noto Sans Ol Chiki"', 'sans-serif'],
-        devanagari: ['"Noto Sans Devanagari"', 'sans-serif']
+        olchiki: ['"Noto Sans Ol Chiki"', '"Nirmala UI"', 'system-ui', 'sans-serif'],
+        devanagari: ['"Noto Sans Devanagari"', '"Nirmala UI"', 'system-ui', 'sans-serif']
       }
     },
   },

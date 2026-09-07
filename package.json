@@ -2,15 +2,53 @@
   "name": "palash-vani",
   "private": true,
   "version": "2.0.0",
+  "description": "PALASH Vani - AI-Assisted Multilingual MTB-MLE Primary Education Suite for Jharkhand (Ho, Mundari, Santhali)",
+  "author": "PALASH Team",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && node -e \"import('esbuild').then(es => es.build({ entryPoints: ['src/nlp/translator.ts'], outfile: 'server-nlp.js', bundle: true, platform: 'node', format: 'esm' }))\"",
+    "electron:dev": "electron .",
+    "electron:build": "npm run build && node scripts/package-desktop.cjs",
+    "package": "npm run build && node scripts/package-desktop.cjs",
+    "app": "electron .",
     "server": "node server.js",
-    "app": "node server.js --open-app",
-    "build:app": "npm run build && node server.js --open-app",
     "preview": "vite preview",
     "test": "npx tsx tests/verifyNLP.ts"
+  },
+  "build": {
+    "appId": "org.palash.vani",
+    "productName": "PALASH Vani",
+    "copyright": "Copyright © 2024 PALASH Team",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${target}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PALASH Vani"
+    }
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -24,6 +62,8 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
+    "electron": "^44.2.0",
+    "electron-builder": "^26.15.3",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.4.5",
