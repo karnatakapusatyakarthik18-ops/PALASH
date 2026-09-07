@@ -1,9 +1,21 @@
-﻿// PALASH Vani - Service Worker v2.0.0 (Fresh Cache Architecture)
-const CACHE_NAME = 'palash-vani-v2-active';
+// PALASH Vani - Service Worker v2.1.0 (100% Offline Edge Architecture)
+const CACHE_NAME = 'palash-vani-v2.1-active';
+const PRECACHE_ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/logo.svg',
+  '/favicon.ico'
+];
 
 self.addEventListener('install', (event) => {
-  // Force immediate activation
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+        console.warn('[ServiceWorker] Pre-cache non-fatal warning:', err);
+      });
+    }).then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -22,8 +34,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // NetworkFirst for HTML and JS to ensure fresh code is always loaded
-  if (event.request.mode === 'navigate' || event.request.destination === 'script') {
+  // Navigation request (HTML): NetworkFirst with offline cache fallback to /index.html
+  if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
@@ -31,19 +43,30 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
           return response;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => {
+          return caches.match(event.request).then((cached) => {
+            return cached || caches.match('/index.html') || caches.match('/');
+          });
+        })
     );
     return;
   }
 
-  // CacheFirst for static assets
+  // Scripts and Assets: CacheFirst strategy
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((response) => {
-        const resClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
-        return response;
-      });
+      return (
+        cached ||
+        fetch(event.request)
+          .then((response) => {
+            const resClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+            return response;
+          })
+          .catch(() => {
+            return caches.match('/index.html');
+          })
+      );
     })
   );
 });

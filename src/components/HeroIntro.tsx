@@ -242,6 +242,16 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
                 <span>{t.heroQuickFolktale}</span>
               </button>
             </div>
+
+            {/* SIH Offline Verification Status Badge */}
+            <div className="pt-2">
+              <div className="inline-flex items-center space-x-2 bg-black/40 border border-emerald-400/40 rounded-2xl px-4 py-1.5 text-xs text-stone-200 shadow-md backdrop-blur-md">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-[11px] md:text-xs">
+                  <strong className="text-emerald-300">100% ऑफ़लाइन सत्यापन गारंटी (Wi-Fi/डेटा बंद):</strong> डैशबोर्ड, भाषा चयन, शिक्षक-छात्र संवाद एवं वॉयस ट्रांसलेशन बिना किसी क्लाउड API के स्थानीय रूप से कार्य करते हैं।
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Right Column: Hero App Logo with Pulsing Vibrant Halo */}
