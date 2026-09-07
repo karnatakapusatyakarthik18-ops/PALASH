@@ -133,6 +133,25 @@ assert(tDirectHindi.hindiText === 'पानी', 'Direct Hindi input "पान
 const tHoStudent = PalashNLPTranslator.translateTribalToHindi('दाः (दाह)', 'ho');
 assert(tHoStudent.hindiText === 'पानी', 'Ho reverse translation of "दाः (दाह)" returns "पानी"', tHoStudent);
 
+// Test 25: Arbitrary Sentence "बच्चे मैदान में खेल रहे हैं" -> Santhali Ol Chiki
+const tPlaySan = PalashNLPTranslator.translate('बच्चे मैदान में खेल रहे हैं', 'santhali');
+assert(tPlaySan.targetText.includes('ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ') && tPlaySan.targetText.includes('ᱴᱟᱺᱰᱤ') && tPlaySan.targetText.includes('ᱮᱱᱮᱡ ᱠᱟᱱᱟᱠᱚ'), 'Arbitrary "बच्चे मैदान में खेल रहे हैं" translates to Santhali with proper Ol Chiki tokens', tPlaySan);
+assert(tPlaySan.tokens.length >= 4, 'Arbitrary sentence tokenized into individual grammatical units', tPlaySan.tokens);
+
+// Test 26: Daily Need "मुझे पानी चाहिए" -> Santhali & Ho
+const tWaterSan = PalashNLPTranslator.translate('मुझे पानी चाहिए', 'santhali');
+assert(tWaterSan.targetText.includes('ᱫᱟᱜ'), 'Santhali "मुझे पानी चाहिए" contains ᱫᱟᱜ (daq)', tWaterSan);
+const tWaterHo = PalashNLPTranslator.translate('मुझे पानी चाहिए', 'ho');
+assert(tWaterHo.targetText.includes('𑢼𑢡𑣄') || tWaterHo.devanagariPhonetic.includes('दाः'), 'Ho "मुझे पानी चाहिए" contains Warang Chiti 𑢼𑢡𑣄 or Devanagari दाः', tWaterHo);
+
+// Test 27: Calendar / School "आज छुट्टी है" -> Santhali
+const tHoliday = PalashNLPTranslator.translate('आज छुट्टी है', 'santhali');
+assert(tHoliday.targetText.includes('ᱛᱮᱦᱮᱧ') && tHoliday.targetText.includes('ᱪᱷᱩᱴᱤ'), 'Santhali "आज छुट्टी है" contains ᱛᱮᱦᱮᱧ and ᱪᱷᱩᱴᱤ', tHoliday);
+
+// Test 28: English Arbitrary "Children are playing in playground" -> Santhali
+const tEngPlay = PalashNLPTranslator.translate('Children are playing in playground', 'santhali');
+assert(tEngPlay.targetText.includes('ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ') && tEngPlay.targetText.includes('ᱴᱟᱺᱰᱤ'), 'English "Children are playing in playground" translates to Santhali', tEngPlay);
+
 console.log("\n-------------------------------------------------");
 console.log(`Verification Summary: ${passed} / ${total} Tests Passed (${Math.round(passed/total*100)}%)`);
 console.log("-------------------------------------------------");
@@ -142,3 +161,4 @@ if (passed === total) {
 } else {
   process.exit(1);
 }
+

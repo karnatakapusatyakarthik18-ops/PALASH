@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node -e \"import('esbuild').then(es => es.build({ entryPoints: ['src/nlp/translator.ts'], outfile: 'server-nlp.js', bundle: true, platform: 'node', format: 'esm' }))\"",
+    "server": "node server.js",
+    "app": "node server.js --open-app",
+    "build:app": "npm run build && node server.js --open-app",
     "preview": "vite preview",
     "test": "npx tsx tests/verifyNLP.ts"
   },

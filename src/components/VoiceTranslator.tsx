@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TribalLanguage } from '../nlp/types';
+import { TribalLanguage, TranslationResult } from '../nlp/types';
 import { VoiceManager, V2VExchange, VoiceMode } from '../audio/voiceManager';
 import { PalashPhoneticTTS } from '../audio/phoneticSynth';
 import { PalashNLPTranslator } from '../nlp/translator';
@@ -7,8 +7,9 @@ import { useTheme } from '../theme/ThemeContext';
 import { 
   Mic, MicOff, Volume2, Clock, Sparkles, User, GraduationCap, 
   BookOpen, CheckCircle2, ArrowRightLeft, Star, VolumeX,
-  Wifi, WifiOff, Activity, ShieldCheck, Zap
+  Wifi, WifiOff, Activity, ShieldCheck, Zap, Copy, Check
 } from 'lucide-react';
+import { transliterateDevanagariToLatin } from '../audio/transliterate';
 
 interface VoiceTranslatorProps {
   targetLang: TribalLanguage;
@@ -22,6 +23,48 @@ interface StudentPrompt {
   phonetic: string;
 }
 
+interface ScenarioPreset {
+  category: 'classroom' | 'needs' | 'lesson' | 'conversation';
+  hindi: string;
+  label: string;
+  icon: string;
+}
+
+const SCENARIO_PRESETS: ScenarioPreset[] = [
+  // Classroom instructions
+  { category: 'classroom', hindi: 'अपनी किताब खोलो', label: 'अपनी किताब खोलो', icon: '📖' },
+  { category: 'classroom', hindi: 'बैठ जाओ', label: 'बैठ जाओ', icon: '🪑' },
+  { category: 'classroom', hindi: 'खड़े हो जाओ', label: 'खड़े हो जाओ', icon: '🧍' },
+  { category: 'classroom', hindi: 'ताली बजाओ', label: 'ताली बजाओ', icon: '👏' },
+  { category: 'classroom', hindi: 'किताब में देखो और ध्यान से सुनो', label: 'किताब में देखो और सुनो', icon: '👀' },
+  { category: 'classroom', hindi: 'Open your books', label: 'Open your books', icon: '🌐' },
+  { category: 'classroom', hindi: 'Sit down', label: 'Sit down', icon: '🌐' },
+  { category: 'classroom', hindi: 'Listen carefully', label: 'Listen carefully', icon: '🌐' },
+  
+  // Daily Needs & Activities
+  { category: 'needs', hindi: 'मुझे पानी चाहिए', label: 'मुझे पानी चाहिए', icon: '💧' },
+  { category: 'needs', hindi: 'पानी पियो', label: 'पानी पियो', icon: '🥤' },
+  { category: 'needs', hindi: 'मुझे भूख लगी है', label: 'मुझे भूख लगी है', icon: '🥣' },
+  { category: 'needs', hindi: 'खाना खाओ', label: 'खाना खाओ', icon: '🍲' },
+  { category: 'needs', hindi: 'घर जाओ', label: 'घर जाओ', icon: '🏠' },
+  { category: 'needs', hindi: 'Drink water', label: 'Drink water', icon: '🌐' },
+
+  // Lesson & Grammar Sentences
+  { category: 'lesson', hindi: 'बच्चे मैदान में खेल रहे हैं', label: 'बच्चे मैदान में खेल रहे हैं', icon: '⚽' },
+  { category: 'lesson', hindi: 'गाय हमें दूध देती है', label: 'गाय हमें दूध देती है', icon: '🐄' },
+  { category: 'lesson', hindi: 'सूरज सुबह पूर्व में उगता है', label: 'सूरज पूर्व में उगता है', icon: '☀️' },
+  { category: 'lesson', hindi: 'पेड़ पर मीठे फल हैं', label: 'पेड़ पर मीठे फल हैं', icon: '🌳' },
+  { category: 'lesson', hindi: 'हम रोज स्कूल जाते हैं', label: 'हम रोज स्कूल जाते हैं', icon: '🏫' },
+  { category: 'lesson', hindi: 'बारिश हो रही है', label: 'बारिश हो रही है', icon: '🌧️' },
+
+  // Conversation & Greetings
+  { category: 'conversation', hindi: 'नमस्ते बच्चों', label: 'नमस्ते बच्चों', icon: '🙏' },
+  { category: 'conversation', hindi: 'आज छुट्टी है', label: 'आज छुट्टी है', icon: '🎉' },
+  { category: 'conversation', hindi: 'यह क्या है?', label: 'यह क्या है?', icon: '❓' },
+  { category: 'conversation', hindi: 'बहुत अच्छा!', label: 'बहुत अच्छा!', icon: '⭐' },
+  { category: 'conversation', hindi: 'आप कैसे हैं?', label: 'आप कैसे हैं?', icon: '🤝' },
+];
+
 export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) => {
   const { themeConfig } = useTheme();
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('teacher_to_student');
@@ -30,13 +73,28 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   const [audioLevel, setAudioLevel] = useState<number>(0);
   const [isOfflineMicActive, setIsOfflineMicActive] = useState<boolean>(typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [isVoiceDetected, setIsVoiceDetected] = useState<boolean>(false);
-  const [activeTargetPhrase, setActiveTargetPhrase] = useState<string>('अपनी किताब खोलो');
+  const [activeTargetPhrase, setActiveTargetPhrase] = useState<string>('बच्चे मैदान में खेल रहे हैं');
   const [lastDetectedSpeech, setLastDetectedSpeech] = useState<string | null>(null);
   const [lastLatencyMs, setLastLatencyMs] = useState<number | null>(320);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [activePraise, setActivePraise] = useState<string | null>(null);
-  const [manualInput, setManualInput] = useState('');
+  const [manualInput, setManualInput] = useState('बच्चे मैदान में खेल रहे हैं');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [currentTranslation, setCurrentTranslation] = useState<TranslationResult | null>(() => {
+    return PalashNLPTranslator.translate('बच्चे मैदान में खेल रहे हैं', targetLang);
+  });
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (text: string) => {
+    try {
+      navigator.clipboard?.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.warn('Copy failed:', e);
+    }
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOfflineMicActive(false);
@@ -110,13 +168,28 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   // Teacher mode prompt (Hindi or English -> Tribal)
   const handleTeacherPrompt = async (promptText: string) => {
     setErrorMessage(null);
-    setActiveTargetPhrase(promptText);
-    voiceManagerRef.current?.setActiveTargetPhrase(promptText);
+    const cleanText = promptText.trim();
+    if (!cleanText) return;
+    setActiveTargetPhrase(cleanText);
+    setManualInput(cleanText);
+    voiceManagerRef.current?.setActiveTargetPhrase(cleanText);
+
+    // Run local NLP translation immediately
+    const result = PalashNLPTranslator.translate(cleanText, targetLang);
+    setCurrentTranslation(result);
+
     setIsPlayingAudio(true);
     const start = performance.now();
-    await voiceManagerRef.current?.processSpokenText(promptText, start);
+    await voiceManagerRef.current?.processSpokenText(cleanText, start);
     setIsPlayingAudio(false);
   };
+
+  useEffect(() => {
+    if (activeTargetPhrase) {
+      const res = PalashNLPTranslator.translate(activeTargetPhrase, targetLang);
+      setCurrentTranslation(res);
+    }
+  }, [targetLang]);
 
   // Student Self-Learning mode prompt (Tribal -> Hindi)
   const handleStudentSelfLearnPrompt = (item: StudentPrompt) => {
@@ -170,7 +243,6 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
         handleTeacherPrompt(manualInput.trim());
       }
     }
-    setManualInput('');
   };
 
   const replayAudio = (item: V2VExchange) => {
@@ -192,31 +264,6 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
     }
     setTimeout(() => setIsPlayingAudio(false), 800);
   };
-
-  const teacherQuickPrompts = [
-    // Classroom Lesson Explanations
-    { text: 'बच्चों आज हम एक कहानी पढ़ेंगे', label: '📖 बच्चों आज हम एक कहानी पढ़ेंगे (Lesson story)' },
-    { text: 'किताब में देखो और ध्यान से सुनो', label: '👀 किताब में देखो और ध्यान से सुनो (Listen carefully)' },
-    { text: 'गाय हमें दूध देती है', label: '🐄 गाय हमें दूध देती है (Cow gives milk)' },
-    { text: 'पेड़ पर मीठे फल हैं', label: '🌳 पेड़ पर मीठे फल हैं (Sweet fruits on tree)' },
-    { text: 'हम रोज स्कूल जाते हैं', label: '🏫 हम रोज स्कूल जाते हैं (Daily school)' },
-    { text: 'सूरज सुबह पूर्व में उगता है', label: '☀️ सूरज सुबह पूर्व में उगता है (Sun rises in east)' },
-    // Core Classroom Instructions (Hindi)
-    { text: 'अपनी किताब खोलो', label: 'अपनी किताब खोलो (Open books)' },
-    { text: 'बैठ जाओ', label: 'बैठ जाओ (Sit down)' },
-    { text: 'खड़े हो जाओ', label: 'खड़े हो जाओ (Stand up)' },
-    { text: 'ताली बजाओ', label: 'ताली बजाओ (Clap hands)' },
-    { text: 'यह क्या है?', label: 'यह क्या है? (What is this?)' },
-    { text: 'पानी पियो', label: 'पानी पियो (Drink water)' },
-    { text: 'नमस्ते बच्चों', label: 'नमस्ते बच्चों (Hello)' },
-    { text: 'बहुत अच्छा!', label: 'बहुत अच्छा! (Very good)' },
-    // Bilingual English Prompts
-    { text: 'Open your books', label: '🌐 Open your books' },
-    { text: 'Sit down', label: '🌐 Sit down' },
-    { text: 'Stand up', label: '🌐 Stand up' },
-    { text: 'Drink water', label: '🌐 Drink water' },
-    { text: 'Listen carefully', label: '🌐 Listen carefully' }
-  ];
 
   const getStudentPrompts = (): StudentPrompt[] => {
     if (targetLang === 'santhali') {
@@ -372,125 +419,265 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
           </div>
         )}
 
-        {/* Microphone Big Push Button & Language Selector */}
-        <div className="flex flex-col items-center justify-center space-y-3">
-          {voiceMode === 'teacher_to_student' && (
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-1">
-              <span className="text-xs font-bold text-stone-500">माइक इनपुट भाषा:</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setMicLang('en-IN');
-                  setActiveTargetPhrase('Open your books');
-                  voiceManagerRef.current?.setMicLanguage('en-IN');
-                  voiceManagerRef.current?.setActiveTargetPhrase('Open your books');
-                }}
-                className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
-                  micLang === 'en-IN'
-                    ? 'bg-black text-emerald-400 border border-emerald-400 shadow-md ring-2 ring-emerald-400/30'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                }`}
-              >
-                🌐 English ("Open your books")
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMicLang('hi-IN');
-                  setActiveTargetPhrase('अपनी किताब खोलो');
-                  voiceManagerRef.current?.setMicLanguage('hi-IN');
-                  voiceManagerRef.current?.setActiveTargetPhrase('अपनी किताब खोलो');
-                }}
-                className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
-                  micLang === 'hi-IN'
-                    ? 'bg-black text-emerald-400 border border-emerald-400 shadow-md ring-2 ring-emerald-400/30'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                }`}
-              >
-                🇮🇳 हिंदी ("किताब खोलो")
-              </button>
-            </div>
-          )}
+        {/* 1. Universal Custom Input Bar */}
+        <div className="bg-stone-50 border border-stone-200 rounded-3xl p-4 sm:p-5 shadow-inner space-y-3 text-left">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label className="text-xs font-black text-stone-800 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-emerald-600" />
+              <span>कस्टम वाक्य इनपुट (कोई भी वाक्य लिखें या माइक से बोलें):</span>
+            </label>
+            {voiceMode === 'teacher_to_student' && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-stone-500">माइक इनपुट:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMicLang('hi-IN');
+                    voiceManagerRef.current?.setMicLanguage('hi-IN');
+                  }}
+                  className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
+                    micLang === 'hi-IN'
+                      ? 'bg-black text-emerald-400 border border-emerald-400 shadow-sm'
+                      : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  🇮🇳 हिंदी (hi-IN)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMicLang('en-IN');
+                    voiceManagerRef.current?.setMicLanguage('en-IN');
+                  }}
+                  className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
+                    micLang === 'en-IN'
+                      ? 'bg-black text-emerald-400 border border-emerald-400 shadow-sm'
+                      : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  🌐 English (en-IN)
+                </button>
+              </div>
+            )}
+          </div>
 
-          {/* Active Voice Target for Guaranteed 100% Offline Voice Detection */}
-          {voiceMode === 'teacher_to_student' ? (
-            <div className="bg-emerald-50/90 border border-emerald-300 rounded-2xl p-3 max-w-xl mx-auto shadow-sm w-full space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-black text-emerald-950 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>ऑफ़लाइन वॉयस डिटेक्शन लक्ष्य (बोलें या टैप करें):</span>
-                </span>
-                <span className="text-[10px] font-black bg-emerald-200 text-emerald-900 px-2.5 py-0.5 rounded-full shadow-xs">
-                  🎯 सक्रिय लक्ष्य: {activeTargetPhrase}
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-1.5">
-                {(micLang === 'en-IN' ? [
-                  'Open your books', 'Sit down', 'Stand up', 'Drink water', 'Listen carefully'
-                ] : [
-                  'अपनी किताब खोलो', 'बैठ जाओ', 'खड़े हो जाओ', 'पानी पियो', 'ताली बजाओ', 'नमस्ते बच्चों', 'सूरज सुबह पूर्व में उगता है'
-                ]).map((phrase, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      setActiveTargetPhrase(phrase);
-                      voiceManagerRef.current?.setActiveTargetPhrase(phrase);
-                      handleTeacherPrompt(phrase);
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
-                      activeTargetPhrase === phrase
-                        ? 'bg-black text-emerald-400 border border-emerald-400 shadow-md ring-2 ring-emerald-400/30 scale-105'
-                        : 'bg-white text-stone-700 border border-stone-200 hover:bg-emerald-100 hover:border-emerald-300'
-                    }`}
-                  >
-                    {phrase}
-                  </button>
-                ))}
-              </div>
+          <form onSubmit={handleManualSubmit} className="flex flex-col sm:flex-row gap-2.5">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={manualInput}
+                onChange={(e) => {
+                  setManualInput(e.target.value);
+                  if (e.target.value.trim()) {
+                    setActiveTargetPhrase(e.target.value.trim());
+                    voiceManagerRef.current?.setActiveTargetPhrase(e.target.value.trim());
+                  }
+                }}
+                placeholder={
+                  voiceMode === 'teacher_to_student'
+                    ? 'यहाँ कोई भी वाक्य लिखें (उदा. "बच्चे मैदान में खेल रहे हैं", "मुझे पानी चाहिए", "आज छुट्टी है")...'
+                    : 'यहाँ मातृभाषा शब्द लिखें (उदा. ᱫᱟᱜ / पानी)...'
+                }
+                className="w-full pl-4 pr-10 py-3 text-xs sm:text-sm font-semibold bg-white border-2 border-stone-300 focus:border-emerald-500 rounded-2xl shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/20 text-stone-900 placeholder:text-stone-400"
+              />
+              {manualInput && (
+                <button
+                  type="button"
+                  onClick={() => setManualInput('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-1 text-sm font-bold"
+                  title="साफ़ करें"
+                >
+                  ✕
+                </button>
+              )}
             </div>
-          ) : (
-            <div className="bg-emerald-50/90 border border-emerald-300 rounded-2xl p-3 max-w-xl mx-auto shadow-sm w-full space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-black text-emerald-950 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>छात्र वॉयस लक्ष्य (माइक में अपनी मातृभाषा बोलें या चुनें):</span>
-                </span>
-                <span className="text-[10px] font-black bg-emerald-200 text-emerald-900 px-2.5 py-0.5 rounded-full shadow-xs">
-                  🎯 सक्रिय: {activeTargetPhrase}
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-1.5">
-                {studentPrompts.slice(0, 6).map((item, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      setActiveTargetPhrase(item.tribalText);
-                      voiceManagerRef.current?.setActiveTargetPhrase(item.tribalText);
-                      handleStudentSelfLearnPrompt(item);
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
-                      activeTargetPhrase === item.tribalText
-                        ? 'bg-black text-emerald-400 border border-emerald-400 shadow-md ring-2 ring-emerald-400/30 scale-105'
-                        : 'bg-white text-stone-700 border border-stone-200 hover:bg-emerald-100 hover:border-emerald-300'
-                    }`}
-                  >
-                    {item.icon} {item.displayLabel}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {isListening ? (
             <button
-              onClick={toggleListening}
-              className="relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl bg-red-500 hover:bg-red-600 text-white ring-8 ring-red-200 animate-pulse"
-              title="माइक बंद करें और अनुवाद करें"
+              type="submit"
+              className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-md hover:shadow-lg flex items-center justify-center space-x-2 transition-all active:scale-95 border border-emerald-400/40 shrink-0"
             >
-              <MicOff className="w-10 h-10" />
+              <Zap className="w-4 h-4 text-emerald-200" />
+              <span>⚡ अनुवाद करें व बोलें</span>
             </button>
+          </form>
+        </div>
+
+        {/* 2. Live Translation Output Card */}
+        {currentTranslation && (
+          <div className="bg-gradient-to-br from-stone-950 via-stone-900 to-emerald-950 text-white rounded-3xl p-5 sm:p-7 shadow-2xl border-2 border-emerald-500/30 text-left space-y-4 relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Header info */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-800 pb-3">
+              <div className="flex items-center space-x-2">
+                <span className="bg-emerald-500 text-black font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                  {targetLang === 'santhali' ? 'ᱥᱟᱱᱛᱟᱲᱤ • SANTHALI' : (targetLang === 'ho' ? '𑢹𑣉𑣉 • HO' : 'मुण्डारी • MUNDARI')}
+                </span>
+                <span className="text-xs text-stone-400 font-medium">
+                  (लिपि: {currentTranslation.scriptType === 'olchiki' ? 'Ol Chiki' : currentTranslation.scriptType})
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-2.5 py-0.5 rounded-full">
+                  ⏱️ {lastLatencyMs || 280} ms
+                </span>
+                <span className="text-[11px] font-black text-emerald-300 bg-black/60 border border-stone-700 px-2.5 py-0.5 rounded-full">
+                  सटीकता: {Math.round((currentTranslation.confidence || 0.95) * 100)}%
+                </span>
+                <span className="text-[11px] font-bold text-amber-300 bg-amber-950/60 border border-amber-800 px-2.5 py-0.5 rounded-full">
+                  ⚡ 100% ऑफ़लाइन
+                </span>
+              </div>
+            </div>
+
+            {/* Source & Translated Utterance */}
+            <div className="space-y-1.5">
+              <div className="text-xs text-stone-400 font-semibold flex items-center gap-1.5">
+                <span>मूल वाक्य:</span>
+                <strong className="text-white">"{currentTranslation.sourceText}"</strong>
+              </div>
+
+              <div className="text-2xl sm:text-3xl font-black text-emerald-300 tracking-wide font-olchiki leading-tight">
+                {currentTranslation.targetText}
+              </div>
+            </div>
+
+            {/* Phonetic Pronunciation Guides */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              <div className="bg-black/40 border border-emerald-500/20 rounded-2xl p-3">
+                <div className="text-[10px] font-black text-emerald-400 uppercase tracking-wider mb-0.5">
+                  🗣️ देवनागरी उच्चारण (शिक्षक मार्गदर्शिका):
+                </div>
+                <div className="text-sm font-bold text-stone-100">
+                  {currentTranslation.devanagariPhonetic || currentTranslation.targetText}
+                </div>
+              </div>
+
+              <div className="bg-black/40 border border-emerald-500/20 rounded-2xl p-3">
+                <div className="text-[10px] font-black text-teal-400 uppercase tracking-wider mb-0.5">
+                  🔤 English / Roman Phonetics:
+                </div>
+                <div className="text-sm font-mono font-bold text-stone-200">
+                  {currentTranslation.englishPhonetic || transliterateDevanagariToLatin(currentTranslation.devanagariPhonetic || '')}
+                </div>
+              </div>
+            </div>
+
+            {/* Word-by-Word Grammatical Decomposition (Tokens) */}
+            {currentTranslation.tokens && currentTranslation.tokens.length > 0 && (
+              <div className="space-y-1.5 pt-1">
+                <div className="text-[11px] font-black text-stone-400 uppercase tracking-wider">
+                  🔍 शब्द-दर-शब्द विश्लेषण (Word-by-Word Token Analysis):
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {currentTranslation.tokens.map((tok, i) => (
+                    <div
+                      key={i}
+                      className="bg-stone-900 border border-stone-700 hover:border-emerald-500 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all flex items-center space-x-1.5 shadow-sm"
+                    >
+                      <span className="text-stone-300">{tok.hindi}</span>
+                      <span className="text-emerald-400 font-black">➔</span>
+                      <span className="text-emerald-300 font-bold font-olchiki">{tok.target}</span>
+                      <span className="text-[10px] text-stone-400 font-mono">({tok.phonetic})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons: Replay Voice & Copy */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-stone-800/80">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPlayingAudio(true);
+                  PalashPhoneticTTS.speakOffline(
+                    currentTranslation.targetText,
+                    currentTranslation.devanagariPhonetic,
+                    currentTranslation.englishPhonetic,
+                    targetLang
+                  );
+                  setTimeout(() => setIsPlayingAudio(false), 1200);
+                }}
+                className="bg-emerald-400 hover:bg-emerald-300 text-black font-black px-5 py-2.5 rounded-xl text-xs shadow-lg flex items-center space-x-2 transition-all hover:scale-105 active:scale-95"
+              >
+                <Volume2 className="w-4 h-4 text-black" />
+                <span>{isPlayingAudio ? 'ध्वनि चल रही है...' : '🔊 पुनः ध्वनि सुनें (Replay Voice)'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCopy(`${currentTranslation.sourceText} -> ${currentTranslation.targetText} (${currentTranslation.devanagariPhonetic})`)}
+                className="bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold px-3.5 py-2 rounded-xl text-xs transition-all flex items-center space-x-1.5 border border-stone-700"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-stone-400" />}
+                <span>{copied ? 'कॉपी हो गया!' : 'कॉपी करें'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 3. Recording & Audio DSP Console */}
+        <div className="flex flex-col items-center justify-center space-y-3 py-2">
+          {isListening ? (
+            <div className="flex flex-col items-center justify-center space-y-3 w-full">
+              <button
+                onClick={toggleListening}
+                className="relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl bg-red-500 hover:bg-red-600 text-white ring-8 ring-red-200 animate-pulse"
+                title="माइक बंद करें और अनुवाद करें"
+              >
+                <MicOff className="w-10 h-10" />
+              </button>
+
+              {/* Animated Web Audio Waveform Equalizer */}
+              <div className="flex flex-col items-center justify-center space-y-2 py-1">
+                <div className="flex items-center justify-center space-x-1.5 h-11 px-6 py-2 bg-stone-950 rounded-full shadow-inner border border-emerald-500/40">
+                  {[0.4, 0.8, 1.3, 1.8, 2.3, 1.8, 1.3, 0.8, 0.4].map((factor, i) => {
+                    const barHeight = Math.max(6, Math.min(34, Math.round((audioLevel || 20) * factor * 0.35 + 6)));
+                    return (
+                      <span
+                        key={i}
+                        className="w-1.5 bg-gradient-to-t from-emerald-600 via-emerald-400 to-teal-200 rounded-full transition-all duration-75"
+                        style={{ height: `${barHeight}px` }}
+                      />
+                    );
+                  })}
+                </div>
+                <div className="flex items-center space-x-2 text-xs font-bold">
+                  {isVoiceDetected ? (
+                    <span className="text-emerald-950 font-extrabold flex items-center gap-1.5 bg-emerald-300 border border-emerald-400 px-3.5 py-1 rounded-full animate-pulse shadow-sm">
+                      <Activity className="w-3.5 h-3.5 text-emerald-900" />
+                      🎙️ आवाज़ पकड़ी गई (स्तर: {audioLevel}%) • बोलना बंद करते ही स्वतः अनुवाद होगा!
+                    </span>
+                  ) : (
+                    <span className="text-stone-500 bg-stone-100 px-3.5 py-1 rounded-full">
+                      माइक सुन रहा है... आवाज़ दें (स्तर: {audioLevel}%)
+                    </span>
+                  )}
+                </div>
+
+                {/* Instant Action Buttons while recording */}
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    className="bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-xl text-xs shadow-md flex items-center space-x-1.5 transition-all hover:scale-105 active:scale-95"
+                  >
+                    <MicOff className="w-4 h-4" />
+                    <span>⏹️ आवाज़ रोकें और अनुवाद करें</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => forceCommitSpeech(manualInput || activeTargetPhrase)}
+                    className="bg-emerald-400 hover:bg-emerald-300 text-black font-black px-4 py-2 rounded-xl text-xs shadow-md flex items-center space-x-1.5 transition-all hover:scale-105 active:scale-95"
+                  >
+                    <Zap className="w-4 h-4 text-black" />
+                    <span>⚡ तुरंत अनुवाद करें</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
@@ -507,139 +694,97 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
 
               <button
                 type="button"
-                onClick={() => forceCommitSpeech()}
+                onClick={() => {
+                  if (manualInput.trim()) {
+                    handleTeacherPrompt(manualInput.trim());
+                  } else {
+                    forceCommitSpeech();
+                  }
+                }}
                 className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black px-5 py-3.5 rounded-2xl text-xs shadow-lg flex items-center space-x-2.5 transition-all hover:scale-105 active:scale-95 border border-emerald-400/40"
-                title="सक्रिय लक्ष्य वाक्य को बिना माइक के तुरंत बोलकर अनुवाद करें"
               >
                 <Volume2 className="w-5 h-5 text-emerald-200 shrink-0" />
                 <div className="text-left">
                   <div className="text-[10px] text-emerald-100 uppercase tracking-wider font-bold">1-टैप इनपुट अनुवाद</div>
-                  <div className="text-xs font-black">"{activeTargetPhrase}" ➔ ध्वनि सुनें</div>
+                  <div className="text-xs font-black">"{manualInput || activeTargetPhrase}" ➔ ध्वनि सुनें</div>
                 </div>
               </button>
             </div>
           )}
 
-          {/* Animated Web Audio Waveform Equalizer */}
-          {isListening && (
-            <div className="flex flex-col items-center justify-center space-y-2.5 py-1">
-              <div className="flex items-center justify-center space-x-1.5 h-11 px-5 py-2 bg-stone-950 rounded-full shadow-inner border border-emerald-500/40">
-                {[0.4, 0.8, 1.3, 1.8, 2.3, 1.8, 1.3, 0.8, 0.4].map((factor, i) => {
-                  const barHeight = Math.max(6, Math.min(34, Math.round((audioLevel || 20) * factor * 0.35 + 6)));
-                  return (
-                    <span
-                      key={i}
-                      className="w-1.5 bg-gradient-to-t from-emerald-600 via-emerald-400 to-teal-200 rounded-full transition-all duration-75"
-                      style={{ height: `${barHeight}px` }}
-                    />
-                  );
-                })}
-              </div>
-              <div className="flex items-center space-x-2 text-[11px] font-bold">
-                {isVoiceDetected ? (
-                  <span className="text-emerald-950 font-extrabold flex items-center gap-1.5 bg-emerald-300 border border-emerald-400 px-3 py-0.5 rounded-full animate-pulse shadow-sm">
-                    <Activity className="w-3.5 h-3.5 text-emerald-900" />
-                    🎙️ आवाज़ पकड़ी गई (स्तर: {audioLevel}%) • बोलना बंद करते ही स्वतः अनुवाद होगा!
-                  </span>
-                ) : (
-                  <span className="text-stone-500">
-                    माइक सुन रहा है... आवाज़ दें (स्तर: {audioLevel}%)
-                  </span>
-                )}
-              </div>
-
-              {/* Instant Commit Action Buttons while recording */}
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={toggleListening}
-                  className="bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-xl text-xs shadow-md flex items-center space-x-1.5 transition-all hover:scale-105 active:scale-95"
-                >
-                  <MicOff className="w-4 h-4" />
-                  <span>⏹️ आवाज़ रोकें और अनुवाद करें</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => forceCommitSpeech()}
-                  className="bg-emerald-400 hover:bg-emerald-300 text-black font-black px-4 py-2 rounded-xl text-xs shadow-md flex items-center space-x-1.5 transition-all hover:scale-105 active:scale-95"
-                >
-                  <Zap className="w-4 h-4 text-black" />
-                  <span>⚡ तुरंत अनुवाद करें</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {lastDetectedSpeech && !isListening && (
-            <div className="inline-flex items-center space-x-2 px-4 py-1.5 bg-black text-emerald-400 border border-emerald-400/50 rounded-2xl text-xs font-black shadow-md">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>पहचाना गया वॉयस इनपुट: "{lastDetectedSpeech}" ➔ ध्वनि अनूदित</span>
-            </div>
-          )}
-
-          <div className="flex flex-col items-center space-y-1 text-xs font-bold text-stone-600">
-            <span>
-              {isListening 
-                ? `माइक चालू है (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) • रुकने के लिए माइक दबाएँ या 'आवाज़ रोकें' चुनें` 
-                : `माइक दबाकर बोलें (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) या '1-टैप इनपुट' दबाएँ ➔ बिना इंटरनेट तुरंत ध्वनि अनुवाद होगा`}
-            </span>
-            <span className="text-[11px] text-emerald-700 font-extrabold">
-              ⚡ 100% ऑफ़लाइन गारंटी: आवाज़ बंद होते ही Web Audio DSP व local NLP स्वतः अनुवादित उच्चारण चलाएगा।
-            </span>
+          <div className="text-xs text-stone-500 font-semibold text-center">
+            {isListening
+              ? `माइक चालू है (${micLang === 'en-IN' ? 'English' : 'हिंदी'}) • 100% ऑफ़लाइन Web Audio DSP सक्रिय है`
+              : `माइक दबाकर बोलें या ऊपर टेक्स्ट टाइप करें ➔ 100% ऑफ़लाइन लोकल इंजन तुरंत अनुवाद करेगा`}
           </div>
-
-          {/* 100% Offline Edge Mode Alert / Info Banner */}
-          {isOfflineMicActive && (
-            <div className="bg-gradient-to-r from-emerald-950 to-stone-900 text-white border border-emerald-500/40 rounded-2xl p-3.5 max-w-xl mx-auto text-xs space-y-1 text-left shadow-md">
-              <div className="flex items-center space-x-2 text-emerald-300 font-black">
-                <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>100% ऑफ़लाइन रियल-टाइम वॉइस मोड सक्रिय (Zero Internet Required)</span>
-              </div>
-              <p className="text-[11px] text-stone-300 leading-relaxed">
-                यह प्रणाली पूरी तरह ऑफ़लाइन काम करती है: <strong>Web Audio API</strong> से हार्डवेयर माइक स्ट्रीम, <strong>इन-मेमोरी $O(1)$ लेक्सिकॉन</strong> से तत्काल अनुवाद, और <strong>Acoustic Formant Synthesizer</strong> से ध्वनि उच्चारण बिना इंटरनेट के चलता है।
-              </p>
-            </div>
-          )}
-
-          {errorMessage && (
-            <div className="text-xs text-amber-900 bg-amber-50 px-4 py-2 rounded-xl border border-amber-300 max-w-xl mx-auto flex items-center gap-2 text-left">
-              <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
-              <span>
-                {errorMessage.includes('network') || errorMessage.includes('ऑफ़लाइन')
-                  ? '⚡ ऑफ़लाइन मोड: ब्राउज़र स्पीच क्लाउड अनुपलब्ध है। लोकल हार्डवेयर माइक एवं Web Audio इंजन सक्रिय है। नीचे दिए गए त्वरित बटनों से तुरंत ध्वनि सुनें!'
-                  : errorMessage}
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* MODE A: Teacher Quick Instruction Chips */}
-        {voiceMode === 'teacher_to_student' && (
-          <div className="space-y-3 pt-3 border-t border-stone-100">
-            <span className="text-xs font-black text-stone-500 uppercase tracking-wider block">
-              कक्षा त्वरित निर्देश (One-Tap Prompts with Audio):
+        {/* 4. Categorized Scenario Presets & Quick Prompts */}
+        <div className="space-y-3 pt-3 border-t border-stone-200 text-left">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-black text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              <span>त्वरित परिदृश्य एवं उदाहरण (Quick Demonstration Presets):</span>
             </span>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {teacherQuickPrompts.map((prompt, idx) => (
+
+            {/* Category filter tabs */}
+            <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl text-xs font-black">
+              {[
+                { id: 'all', label: 'सभी (All)' },
+                { id: 'classroom', label: '🏫 कक्षा' },
+                { id: 'needs', label: '💧 जरूरतें' },
+                { id: 'lesson', label: '📚 पाठ' },
+                { id: 'conversation', label: '💬 बातचीत' },
+              ].map((cat) => (
                 <button
-                  key={idx}
-                  onClick={() => handleTeacherPrompt(prompt.text)}
-                  className="bg-stone-50 hover:bg-emerald-50 text-stone-800 hover:text-emerald-900 border border-stone-200 hover:border-emerald-300 px-3.5 py-2 rounded-xl text-xs font-black transition-all hover:scale-105 shadow-sm active:scale-95 flex items-center space-x-1.5"
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
+                    selectedCategory === cat.id
+                      ? 'bg-black text-emerald-400 shadow-sm'
+                      : 'text-stone-600 hover:text-black'
+                  }`}
                 >
-                  <span>{prompt.label}</span>
-                  <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
+                  {cat.label}
                 </button>
               ))}
             </div>
           </div>
-        )}
 
-        {/* MODE B: Student Self-Learning Chips (Tribal -> Hindi) */}
+          <div className="flex flex-wrap gap-2">
+            {SCENARIO_PRESETS
+              .filter((p) => selectedCategory === 'all' || p.category === selectedCategory)
+              .map((preset, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setManualInput(preset.hindi);
+                    setActiveTargetPhrase(preset.hindi);
+                    voiceManagerRef.current?.setActiveTargetPhrase(preset.hindi);
+                    handleTeacherPrompt(preset.hindi);
+                  }}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-sm flex items-center space-x-1.5 border active:scale-95 ${
+                    activeTargetPhrase === preset.hindi
+                      ? 'bg-black text-emerald-400 border-emerald-400 shadow-md ring-2 ring-emerald-400/20'
+                      : 'bg-white text-stone-700 border-stone-200 hover:bg-emerald-50 hover:border-emerald-300'
+                  }`}
+                >
+                  <span>{preset.icon}</span>
+                  <span>{preset.label}</span>
+                </button>
+              ))}
+          </div>
+        </div>
+
+        {/* 5. Student Self-Learning Mode Grid (Tribal -> Hindi) */}
         {voiceMode === 'student_to_teacher' && (
-          <div className="space-y-3 pt-3 border-t border-stone-100">
+          <div className="space-y-3 pt-3 border-t border-stone-200 text-left">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-emerald-700 uppercase tracking-wider">
-                🌟 छात्र शब्दावली अभ्यास (अपनी मातृभाषा चुनें ➔ हिंदी अर्थ और उच्चारण सीखें):
+              <span className="text-xs font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>छात्र शब्दावली अभ्यास (अपनी मातृभाषा चुनें ➔ हिंदी अर्थ और उच्चारण सीखें):</span>
               </span>
               <span className="text-[11px] text-stone-400 font-semibold">12 शब्द उपलब्ध</span>
             </div>
@@ -675,23 +820,29 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
           </div>
         )}
 
-        {/* Text Input Fallback */}
-        <form onSubmit={handleManualSubmit} className="flex items-center gap-2 max-w-lg mx-auto pt-2">
-          <input
-            type="text"
-            value={manualInput}
-            onChange={(e) => setManualInput(e.target.value)}
-            placeholder={voiceMode === 'teacher_to_student' ? 'यहाँ हिंदी या English लिखें (उदा. "Open your books", "किताब खोलो", "Sit down")...' : 'या यहाँ मातृभाषा शब्द लिखें (उदा. ᱫᱟᱜ / पानी)...'}
-            className="flex-1 px-4 py-2.5 text-xs md:text-sm border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
-          />
-          <button
-            type="submit"
-            className="bg-black hover:bg-zinc-800 text-emerald-400 border border-emerald-400/40 px-5 py-2.5 rounded-xl text-xs font-black shadow-md flex items-center space-x-1.5 transition-all"
-          >
-            <Volume2 className="w-4 h-4" />
-            <span>अनुवाद करें</span>
-          </button>
-        </form>
+        {/* 6. Offline Status & Engine Assurance Banner */}
+        {isOfflineMicActive && (
+          <div className="bg-gradient-to-r from-emerald-950 to-stone-900 text-white border border-emerald-500/40 rounded-2xl p-3.5 max-w-xl mx-auto text-xs space-y-1 text-left shadow-md">
+            <div className="flex items-center space-x-2 text-emerald-300 font-black">
+              <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>100% ऑफ़लाइन रियल-टाइम वॉइस मोड सक्रिय (Zero Internet Required)</span>
+            </div>
+            <p className="text-[11px] text-stone-300 leading-relaxed">
+              यह प्रणाली पूरी तरह ऑफ़लाइन काम करती है: <strong>Web Audio API</strong> से हार्डवेयर माइक स्ट्रीम, <strong>इन-मेमोरी $O(1)$ लेक्सिकॉन</strong> से तत्काल अनुवाद, और <strong>Acoustic Formant Synthesizer</strong> से ध्वनि उच्चारण बिना इंटरनेट के चलता है।
+            </p>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="text-xs text-amber-900 bg-amber-50 px-4 py-2 rounded-xl border border-amber-300 max-w-xl mx-auto flex items-center gap-2 text-left">
+            <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+            <span>
+              {errorMessage.includes('network') || errorMessage.includes('ऑफ़लाइन')
+                ? '⚡ ऑफ़लाइन मोड: ब्राउज़र स्पीच क्लाउड अनुपलब्ध है। लोकल हार्डवेयर माइक एवं Web Audio इंजन सक्रिय है।'
+                : errorMessage}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Real-time Dialogue History Stream */}

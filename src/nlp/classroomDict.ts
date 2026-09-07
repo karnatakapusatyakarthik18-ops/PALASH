@@ -1106,7 +1106,255 @@ export const CLASSROOM_VOCABULARY_MAP: Record<string, TribalTranslationEntry> = 
     santhali: { target: 'ᱦᱩᱭᱩᱜ ᱠᱟᱱᱟ', phonetic: 'हुयुग काना', english: 'Huyuq kana' },
     ho: { target: 'होबाओ', phonetic: 'होबाओ', english: 'Hobao' },
     mundari: { target: 'होबाओ', phonetic: 'होबाओ', english: 'Hobao' }
-  }
+  },
+
+  // --- Expanded Verbs & Actions ---
+  'खेलना': {
+    santhali: { target: 'ᱮᱱᱮᱡ', phonetic: 'एनेज', english: 'Enej' },
+    ho: { target: 'एनांग', phonetic: 'एनांग', english: 'Enang' },
+    mundari: { target: 'एनांग', phonetic: 'एनांग', english: 'Enang' }
+  },
+  'कूद': {
+    santhali: { target: 'ᱫᱚᱱ', phonetic: 'दोन', english: 'Don' },
+    ho: { target: 'दोन', phonetic: 'दोन', english: 'Don' },
+    mundari: { target: 'दोन', phonetic: 'दोन', english: 'Don' }
+  },
+  'कूदना': {
+    santhali: { target: 'ᱫᱚᱱ', phonetic: 'दोन', english: 'Don' },
+    ho: { target: 'दोन', phonetic: 'दोन', english: 'Don' },
+    mundari: { target: 'दोन', phonetic: 'दोन', english: 'Don' }
+  },
+  'हँस': {
+    santhali: { target: 'ᱞᱟᱸᱫᱟ', phonetic: 'लांदा', english: 'Landa' },
+    ho: { target: 'लांदा', phonetic: 'लांदा', english: 'Landa' },
+    mundari: { target: 'लांदा', phonetic: 'लांदा', english: 'Landa' }
+  },
+  'हँसना': {
+    santhali: { target: 'ᱞᱟᱸᱫᱟ', phonetic: 'लांदा', english: 'Landa' },
+    ho: { target: 'लांदा', phonetic: 'लांदा', english: 'Landa' },
+    mundari: { target: 'लांदा', phonetic: 'लांदा', english: 'Landa' }
+  },
+  'रोना': {
+    santhali: { target: 'ᱨᱟᱜ', phonetic: 'राग', english: 'Raq' },
+    ho: { target: 'राः', phonetic: 'राह', english: 'Rah' },
+    mundari: { target: 'राः', phonetic: 'राह', english: 'Rah' }
+  },
+  'सोना': {
+    santhali: { target: 'ᱡᱟᱹᱯᱤᱫ', phonetic: 'जापिद', english: 'Japid' },
+    ho: { target: 'गिति', phonetic: 'गीती', english: 'Giti' },
+    mundari: { target: 'गिति', phonetic: 'गीती', english: 'Giti' }
+  },
+  'जाग': {
+    santhali: { target: 'ᱵᱮᱨᱮᱫ', phonetic: 'बेरेद', english: 'Beret' },
+    ho: { target: 'तिंगुन', phonetic: 'तिंगुन', english: 'Tingun' },
+    mundari: { target: 'तिंगुन', phonetic: 'तिंगुन', english: 'Tingun' }
+  },
+  'जागना': {
+    santhali: { target: 'ᱵᱮᱨᱮᱫ', phonetic: 'बेरेद', english: 'Beret' },
+    ho: { target: 'तिंगुन', phonetic: 'तिंगुन', english: 'Tingun' },
+    mundari: { target: 'तिंगुन', phonetic: 'तिंगुन', english: 'Tingun' }
+  },
+  'दौड़ना': {
+    santhali: { target: 'ᱫᱟᱹᱲ', phonetic: 'दाड़', english: 'Dar' },
+    ho: { target: 'निर', phonetic: 'नीर', english: 'Nir' },
+    mundari: { target: 'निर', phonetic: 'नीर', english: 'Nir' }
+  },
+  'चलना': {
+    santhali: { target: 'ᱛᱟᱲᱟᱢ', phonetic: 'ताड़ाम', english: 'Taram' },
+    ho: { target: 'सेन', phonetic: 'सेन', english: 'Sen' },
+    mundari: { target: 'सेन', phonetic: 'सेन', english: 'Sen' }
+  },
+  'ला': {
+    santhali: { target: 'ᱟᱹᱜᱩ', phonetic: 'आगु', english: 'Agu' },
+    ho: { target: 'अउ', phonetic: 'अऊ', english: 'Au' },
+    mundari: { target: 'अगु', phonetic: 'अगु', english: 'Agu' }
+  },
+  'लाना': {
+    santhali: { target: 'ᱟᱹᱜᱩ', phonetic: 'आगु', english: 'Agu' },
+    ho: { target: 'अउ', phonetic: 'अऊ', english: 'Au' },
+    mundari: { target: 'अगु', phonetic: 'अगु', english: 'Agu' }
+  },
+  'देना': {
+    santhali: { target: 'ᱮᱢ', phonetic: 'एम', english: 'Em' },
+    ho: { target: 'एम', phonetic: 'एम', english: 'Em' },
+    mundari: { target: 'ओम', phonetic: 'ओम', english: 'Om' }
+  },
+  'लेना': {
+    santhali: { target: 'ᱦᱟᱛᱟᱣ', phonetic: 'हाताव', english: 'Hataw' },
+    ho: { target: 'इदि', phonetic: 'इदी', english: 'Idi' },
+    mundari: { target: 'इदि', phonetic: 'इदी', english: 'Idi' }
+  },
+  'रुक': {
+    santhali: { target: 'ᱛᱤᱸᱜᱩ', phonetic: 'तिंगु', english: 'Tingu' },
+    ho: { target: 'तिंगुन', phonetic: 'तिंगुन', english: 'Tingun' },
+    mundari: { target: 'तिंगुन', phonetic: 'तिंगुन', english: 'Tingun' }
+  },
+  'रुकना': {
+    santhali: { target: 'ᱛᱤᱸᱜᱩ', phonetic: 'तिंगु', english: 'Tingu' },
+    ho: { target: 'तिंगुन', phonetic: 'तिंगुन', english: 'Tingun' },
+    mundari: { target: 'तिंगुन', phonetic: 'तिंगुन', english: 'Tingun' }
+  },
+  'समझना': {
+    santhali: { target: 'ᱵᱩᱡᱷᱟᱹᱣ', phonetic: 'बुझाव', english: 'Bujhaw' },
+    ho: { target: 'अटकड़', phonetic: 'अटकड़', english: 'Atkar' },
+    mundari: { target: 'अटकड़', phonetic: 'अटकड़', english: 'Atkar' }
+  },
+
+  // --- Extended Daily Nouns & Classroom Life ---
+  'मैदान': {
+    santhali: { target: 'ᱴᱟᱺᱰᱤ', phonetic: 'टांडी', english: 'Tandi' },
+    ho: { target: 'टांडी', phonetic: 'टांडी', english: 'Tandi' },
+    mundari: { target: 'पिड़', phonetic: 'पिड़', english: 'Pir' }
+  },
+  'चावल': {
+    santhali: { target: 'ᱪᱟᱣᱞᱮ', phonetic: 'चावले', english: 'Chaole' },
+    ho: { target: 'चाउलि', phonetic: 'चाउली', english: 'Chauli' },
+    mundari: { target: 'चाउलि', phonetic: 'चाउली', english: 'Chauli' }
+  },
+  'भात': {
+    santhali: { target: 'ᱫᱟᱠᱟ', phonetic: 'दाका', english: 'Daka' },
+    ho: { target: 'मंडी', phonetic: 'मंडी', english: 'Mandi' },
+    mundari: { target: 'मंडी', phonetic: 'मंडी', english: 'Mandi' }
+  },
+  'दाल': {
+    santhali: { target: 'ᱫᱟᱹᱞ', phonetic: 'दाल', english: 'Dal' },
+    ho: { target: 'दालि', phonetic: 'दाली', english: 'Dali' },
+    mundari: { target: 'दालि', phonetic: 'दाली', english: 'Dali' }
+  },
+  'सब्जी': {
+    santhali: { target: 'ᱩᱛᱩ', phonetic: 'उतु', english: 'Utu' },
+    ho: { target: 'उतु', phonetic: 'उतु', english: 'Utu' },
+    mundari: { target: 'उतु', phonetic: 'उतु', english: 'Utu' }
+  },
+  'चाय': {
+    santhali: { target: 'ᱪᱟ', phonetic: 'चा', english: 'Cha' },
+    ho: { target: 'चा', phonetic: 'चा', english: 'Cha' },
+    mundari: { target: 'चा', phonetic: 'चा', english: 'Cha' }
+  },
+  'कपड़े': {
+    santhali: { target: 'ᱞᱩᱜᱽᱲᱤ', phonetic: 'लुगड़ी', english: 'Lugri' },
+    ho: { target: 'किचिरीः', phonetic: 'किचिरीह', english: 'Kichirih' },
+    mundari: { target: 'किचिरीः', phonetic: 'किचिरीह', english: 'Kichirih' }
+  },
+  'कपड़ा': {
+    santhali: { target: 'ᱞᱩᱜᱽᱲᱤ', phonetic: 'लुगड़ी', english: 'Lugri' },
+    ho: { target: 'किचिरीः', phonetic: 'किचिरीह', english: 'Kichirih' },
+    mundari: { target: 'किचिरीः', phonetic: 'किचिरीह', english: 'Kichirih' }
+  },
+  'जूते': {
+    santhali: { target: 'ᱯᱟᱱᱟᱦᱤ', phonetic: 'पानाही', english: 'Panahi' },
+    ho: { target: 'खड़ाउ', phonetic: 'खड़ाऊ', english: 'Kharau' },
+    mundari: { target: 'खड़ाउ', phonetic: 'खड़ाऊ', english: 'Kharau' }
+  },
+  'घंटी': {
+    santhali: { target: 'ᱜᱷᱟᱹᱱᱴᱤ', phonetic: 'घंटी', english: 'Ghanti' },
+    ho: { target: 'घंटी', phonetic: 'घंटी', english: 'Ghanti' },
+    mundari: { target: 'घंटी', phonetic: 'घंटी', english: 'Ghanti' }
+  },
+  'नदी': {
+    santhali: { target: 'ᱜᱟᱰᱟ', phonetic: 'गाडा', english: 'Gada' },
+    ho: { target: 'गारा', phonetic: 'गारा', english: 'Gara' },
+    mundari: { target: 'गारा', phonetic: 'गारा', english: 'Gara' }
+  },
+  'पहाड़': {
+    santhali: { target: 'ᱵᱩᱨᱩ', phonetic: 'बुरु', english: 'Buru' },
+    ho: { target: 'बुरू', phonetic: 'बुरू', english: 'Buru' },
+    mundari: { target: 'बुरू', phonetic: 'बुरू', english: 'Buru' }
+  },
+  'जंगल': {
+    santhali: { target: 'ᱵᱤᱨ', phonetic: 'बीर', english: 'Bir' },
+    ho: { target: 'बीर', phonetic: 'बीर', english: 'Bir' },
+    mundari: { target: 'बीर', phonetic: 'बीर', english: 'Bir' }
+  },
+  'रास्ता': {
+    santhali: { target: 'ᱦᱚᱨ', phonetic: 'होर', english: 'Hor' },
+    ho: { target: 'होरा', phonetic: 'होरा', english: 'Hora' },
+    mundari: { target: 'होरा', phonetic: 'होरा', english: 'Hora' }
+  },
+  'बारिश': {
+    santhali: { target: 'ᱫᱟᱜ', phonetic: 'दाग', english: 'Daq' },
+    ho: { target: 'गामा', phonetic: 'गामा', english: 'Gama' },
+    mundari: { target: 'गामा', phonetic: 'गामा', english: 'Gama' }
+  },
+  'छुट्टी': {
+    santhali: { target: 'ᱪᱷᱩᱴᱤ', phonetic: 'छुट्टी', english: 'Chhutti' },
+    ho: { target: 'छुट्टी', phonetic: 'छुट्टी', english: 'Chhutti' },
+    mundari: { target: 'छुट्टी', phonetic: 'छुट्टी', english: 'Chhutti' }
+  },
+  'दोपहर': {
+    santhali: { target: 'ᱛᱤᱠᱤᱱ', phonetic: 'तिकिन', english: 'Tikin' },
+    ho: { target: 'तिकिन', phonetic: 'तिकिन', english: 'Tikin' },
+    mundari: { target: 'तिकिन', phonetic: 'तिकिन', english: 'Tikin' }
+  },
+  'खुश': {
+    santhali: { target: 'ᱨᱟᱹᱥᱠᱟᱹ', phonetic: 'रास्का', english: 'Raska' },
+    ho: { target: 'रासा', phonetic: 'रासा', english: 'Rasa' },
+    mundari: { target: 'रासा', phonetic: 'रासा', english: 'Rasa' }
+  },
+  'ठंडा': {
+    santhali: { target: 'ᱨᱮᱭᱟᱲ', phonetic: 'रेयाड़', english: 'Reyar' },
+    ho: { target: 'रयाड़', phonetic: 'रयाड़', english: 'Rayar' },
+    mundari: { target: 'रयाड़', phonetic: 'रयाड़', english: 'Rayar' }
+  },
+  'गरम': {
+    santhali: { target: 'ᱞᱚᱞᱚ', phonetic: 'लोलो', english: 'Lolo' },
+    ho: { target: 'लोलो', phonetic: 'लोलो', english: 'Lolo' },
+    mundari: { target: 'लोलो', phonetic: 'लोलो', english: 'Lolo' }
+  },
+  'पुराना': {
+    santhali: { target: 'ᱢᱟᱨᱮ', phonetic: 'मारे', english: 'Mare' },
+    ho: { target: 'मारे', phonetic: 'मारे', english: 'Mare' },
+    mundari: { target: 'मारे', phonetic: 'मारे', english: 'Mare' }
+  },
+  'थोड़ा': {
+    santhali: { target: 'ᱠᱟᱹᱴᱤᱡ', phonetic: 'कातिज', english: 'Katij' },
+    ho: { target: 'हुडिंग', phonetic: 'हुडिंग', english: 'Huding' },
+    mundari: { target: 'हुडिंग', phonetic: 'हुडिंग', english: 'Huding' }
+  },
+  'मिलकर': {
+    santhali: { target: 'ᱢᱮᱥᱟ ᱠᱟᱛᱮ', phonetic: 'मेसा काते', english: 'Mesa kate' },
+    ho: { target: 'मिसाते', phonetic: 'मिसाते', english: 'Misate' },
+    mundari: { target: 'मिसाते', phonetic: 'मिसाते', english: 'Misate' }
+  },
+
+  // --- Questions & Connectives ---
+  'कब': {
+    santhali: { target: 'ᱛᱤᱥ', phonetic: 'तिस', english: 'Tis' },
+    ho: { target: 'चिमता', phonetic: 'चिमता', english: 'Chimta' },
+    mundari: { target: 'चिमता', phonetic: 'चिमता', english: 'Chimta' }
+  },
+  'क्यों': {
+    santhali: { target: 'ᱪᱮᱫᱟᱜ', phonetic: 'चेदाग', english: 'Chedaq' },
+    ho: { target: 'चिनते', phonetic: 'चिनते', english: 'Chinte' },
+    mundari: { target: 'चिनते', phonetic: 'चिनते', english: 'Chinte' }
+  },
+  'कैसे': {
+    santhali: { target: 'ᱪᱮᱫᱞᱮᱠᱟ', phonetic: 'चेदलेका', english: 'Chetleka' },
+    ho: { target: 'चिलेका', phonetic: 'चिलेका', english: 'Chileka' },
+    mundari: { target: 'चिलेका', phonetic: 'चिलेका', english: 'Chileka' }
+  },
+
+  // --- Grammatical Particles & Aspect Markers ---
+  'रहा है': {
+    santhali: { target: 'ᱠᱟᱱᱟ', phonetic: 'काना', english: 'Kana' },
+    ho: { target: 'तना', phonetic: 'तना', english: 'Tana' },
+    mundari: { target: 'तना', phonetic: 'तना', english: 'Tana' }
+  },
+  'रहे हैं': {
+    santhali: { target: 'ᱠᱟᱱᱟᱠᱚ', phonetic: 'कानाको', english: 'Kanako' },
+    ho: { target: 'तनको', phonetic: 'तनको', english: 'Tanko' },
+    mundari: { target: 'तनको', phonetic: 'तनको', english: 'Tanko' }
+  },
+  'रही है': {
+    santhali: { target: 'ᱠᱟᱱᱟ', phonetic: 'काना', english: 'Kana' },
+    ho: { target: 'तना', phonetic: 'तना', english: 'Tana' },
+    mundari: { target: 'तना', phonetic: 'तना', english: 'Tana' }
+  },
+  'हूँ': {
+    santhali: { target: 'ᱠᱟᱹᱱᱟᱹᱧ', phonetic: 'कानांज', english: 'Kanaj' },
+    ho: { target: 'तनांग', phonetic: 'तनांग', english: 'Tanang' },
+    mundari: { target: 'तनांग', phonetic: 'तनांग', english: 'Tanang' }
+  },
 };
 
 /**
@@ -1214,6 +1462,20 @@ export function lemmatizeHindiWord(rawWord: string): { root: string; isPlural: b
 
   // Counting
   if (/^(गिनेंगे|गिनो|गिनना|गिनती)/.test(w)) return { root: 'गिन', isPlural: false, isVerbFuture: false, isVerbImperative: true };
+
+  // Playing
+  if (/^(खेलेंगे|खेलूंगा|खेलोगे)/.test(w)) return { root: 'खेल', isPlural: true, isVerbFuture: true, isVerbImperative: false };
+  if (/^(खेलो|खेलिए|खेलना)/.test(w)) return { root: 'खेल', isPlural: false, isVerbFuture: false, isVerbImperative: true };
+  if (/^(खेलता|खेलती|खेलते|खेलकर|खेल)/.test(w)) return { root: 'खेल', isPlural: false, isVerbFuture: false, isVerbImperative: false };
+
+  // Running
+  if (/^(दौड़ेंगे|दौड़ो|दौड़ना|दौड़ते|दौड़ता|दौड़ती)/.test(w)) return { root: 'दौड़', isPlural: false, isVerbFuture: false, isVerbImperative: false };
+
+  // Sleeping
+  if (/^(सोएंगे|सोओ|सोना|सोते|सोता|सोती)/.test(w)) return { root: 'सो', isPlural: false, isVerbFuture: false, isVerbImperative: false };
+
+  // Bringing
+  if (/^(लाएंगे|लाओ|लाना|लाता|लाती|लाते)/.test(w)) return { root: 'ला', isPlural: false, isVerbFuture: false, isVerbImperative: false };
 
   // 3. High-Frequency Plural Nouns
   if (/(ों|ें|ियाँ|ियां)$/.test(w)) {
