@@ -3,9 +3,10 @@
 ### Supporting Ho, Mundari, and Santhali Primary Classrooms
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](https://opensource.org/licenses/MIT)
-[![Tests: 100% Passed](https://img.shields.io/badge/Tests-44%2F44%20Passed-brightgreen.svg)]()
+[![Tests: 100% Passed](https://img.shields.io/badge/Tests-85%2F85%20Passed-brightgreen.svg)]()
 [![Desktop: Electron Standalone](https://img.shields.io/badge/Desktop-Standalone%20EXE%20(Zero%20Localhost)-blue.svg)]()
 [![Offline: 100% Edge](https://img.shields.io/badge/Network-100%25%20Offline%20(0%20KB%2Fs)-emerald.svg)]()
+[![Database: XAMPP MySQL](https://img.shields.io/badge/Database-XAMPP%20MySQL%20%2B%20Offline%20Fallback-amber.svg)]()
 
 ---
 
@@ -82,8 +83,8 @@ release\PALASH-Vani-Portable.bat
 | `npm run build` | Compiles TypeScript, bundles Vite production assets into `dist/`, and generates `server-nlp.js`. |
 | `npm run app` | Launches the standalone Electron desktop window loading directly from `dist/index.html`. |
 | `npm run package` | Packages the standalone Windows desktop application into `release/win-unpacked/PALASH Vani.exe` with bundled `app.asar`. |
-| `npm run server` | Runs the headless local Node.js HTTP server with REST APIs (`/api/translate`, `/api/health`). |
-| `npm test` | Runs the automated NLP verification test suite (44/44 tests passed). |
+| `npm run server` | Starts the Node.js API server (`http://127.0.0.1:5000`) with auto-detecting XAMPP MySQL connection. |
+| `npm test` | Runs the automated 85-test verification suite (44 NLP + 18 Offline STT + 23 Backend API). |
 
 ---
 
@@ -98,6 +99,64 @@ release\PALASH-Vani-Portable.bat
 | :--- | :--- | :--- |
 | **Pillar 1: Desktop Shell Offline** | **Electron Runtime + `loadFile('dist/index.html')` + `file://` protocol** | Loads compiled HTML, JS bundles, local styles, and assets directly from disk with **0 KB/s internet** and zero localhost dependency. |
 | **Pillar 2: NLP & Voice Translation Offline** | **In-Memory Pure TypeScript NLP Engine + Web Audio DSP + Klatt Formant Synthesizer** | Performs speech VAD, $O(1)$ morphological translation, token decomposition, and acoustic sound synthesis **entirely on the local CPU / audio hardware**. |
+
+---
+
+## 🗄️ Local XAMPP & MySQL Database Integration
+
+PALASH Vani includes an optional, robust local persistence layer powered by **XAMPP / MySQL** and an Express API server (`server/server.js`).
+
+### ⚙️ Core Architectural Guarantee
+> [!IMPORTANT]
+> **Zero Translation Dependency on MySQL:**  
+> The core translation engine (Web Audio Acoustic STT ➔ In-Memory Pure TypeScript NLP ➔ Web Audio Formant TTS) is **100% offline and local**. Translation and classroom voice modules NEVER block or depend on MySQL.
+> 
+> MySQL is strictly used for relational application persistence:
+> - User & Teacher accounts (`users`, `teachers`)
+> - Enrolled students & grade levels (`students`)
+> - MTB-MLE lessons & curriculum (`lessons`)
+> - Multilingual vocabulary bank (`vocabulary`)
+> - Quizzes & interactive questions (`quizzes`, `quiz_questions`)
+> - Quiz submissions & student progress (`quiz_results`, `student_progress`)
+> - Non-blocking translation audit history (`translation_history`)
+> - Application settings & offline cache metadata (`settings`)
+
+### 🟢 Live Database Connection Detection
+The desktop navigation bar automatically detects and displays live database status:
+- **`🟢 ● DATABASE CONNECTED`**: Active connection established with XAMPP MySQL (`palash` database).
+- **`🟡 ● OFFLINE DATABASE MODE`**: If XAMPP/MySQL is stopped or not installed, the application continues running seamlessly without crashing, transparently utilizing local cached records.
+
+### 📋 Step-by-Step XAMPP Setup Instructions
+
+1. **Install & Start XAMPP**:
+   - Download and install [XAMPP](https://www.apachefriends.org/) (if not already installed).
+   - Open the **XAMPP Control Panel**.
+   - Click **Start** for **Apache** and **MySQL**.
+2. **Access phpMyAdmin**:
+   - Open your web browser and navigate to: `http://localhost/phpmyadmin`
+3. **Import Database Schema & Seed Data**:
+   - Click **New** in the left sidebar and create a database named: `palash` with collation `utf8mb4_unicode_ci`.
+   - Select the `palash` database, click the **Import** tab:
+     - Import [database/schema.sql](file:///c:/Users/karna/Documents/sih/database/schema.sql) (creates all 12 tables, foreign keys, and indexes).
+     - Import [database/seed.sql](file:///c:/Users/karna/Documents/sih/database/seed.sql) (populates authentic Jharkhand tribal lessons, vocabulary, and quiz data).
+4. **Verify `.env` Configuration**:
+   - The included `.env` file is pre-configured for standard XAMPP defaults:
+     ```env
+     PORT=5000
+     DB_HOST=localhost
+     DB_PORT=3306
+     DB_NAME=palash
+     DB_USER=root
+     DB_PASSWORD=
+     ```
+5. **Start the Local Node.js API Server**:
+   ```bash
+   npm run server
+   ```
+   - Console logs will confirm: `[Database] 🟢 Connected to MySQL/MariaDB database: palash`.
+6. **Launch PALASH Vani Desktop App**:
+   - Run `PALASH-App.bat` or `npm run app`.
+   - The top banner will immediately show `● DATABASE CONNECTED`.
 
 ---
 
@@ -160,13 +219,23 @@ The React frontend has been kept strictly decoupled from Electron internals:
 
 ## 📊 Automated Verification Results
 
-All 44 tests pass with **100% success rate** via `npm test`:
-- 8/8 Classroom Commands (Santhali Ol Chiki, Ho, Mundari)
-- 5/5 NIPUN Bharat Numeracy & Grammar Sentences
-- 8/8 Reverse Tribal-to-Hindi Translations
-- 7/7 Bilingual English Classroom Instructions
-- 12/12 Lesson Story Explanations & Daily Sentences
-- 4/4 Arbitrary Sentence Translations & Tokenizations
+All 85 tests pass with **100% success rate** via `npm test`:
+- **44 Pure NLP Tests** (`tests/verifyNLP.ts`):
+  - 8/8 Classroom Commands (Santhali Ol Chiki, Ho, Mundari)
+  - 5/5 NIPUN Bharat Numeracy & Grammar Sentences
+  - 8/8 Reverse Tribal-to-Hindi Translations
+  - 7/7 Bilingual English Classroom Instructions
+  - 12/12 Lesson Story Explanations & Daily Sentences
+  - 4/4 Arbitrary Sentence Translations & Tokenizations
+- **18 Offline Acoustic Speech Recognition Tests** (`tests/verifyOfflineSTT.ts`):
+  - Normalized envelope extraction and 40-point spectrogram matrix matching
+  - Syllable segmentation and acoustic duration profiling
+  - Real-time offline acoustic matching for Hindi, Tribal, and English classroom utterances
+- **23 Backend API & Database Independence Tests** (`tests/verifyAPI.ts`):
+  - Health endpoint reporting and dynamic database status detection
+  - Lessons, vocabulary, quizzes, and student progress retrieval
+  - Non-blocking translation history auditing
+  - Proof that Santhali, Ho, and Mundari core translation works 100% offline with zero database dependency
 
 ---
 

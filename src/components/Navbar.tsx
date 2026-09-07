@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TribalLanguage } from '../nlp/types';
 import { PalashPhoneticTTS } from '../audio/phoneticSynth';
 import { AppLanguage, translations } from '../i18n/translations';
 import { UserRole } from '../App';
+import { checkDatabaseConnection, DatabaseStatus } from '../services/api';
 import { 
   Wifi, WifiOff, Cpu, BookOpen, Layers, Mic, FileText, Sparkles, 
   Home, Volume2, Edit3, Headphones, Camera, Award, Radio, Compass, Database, Palette,
@@ -40,6 +41,25 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { theme, themeConfig, setTheme } = useTheme();
   const [testedAudio, setTestedAudio] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
+  const [dbStatus, setDbStatus] = useState<DatabaseStatus>({
+    isServerOnline: false,
+    isDbConnected: false,
+    mode: 'api_offline'
+  });
+
+  useEffect(() => {
+    let mounted = true;
+    const verifyDb = async () => {
+      const status = await checkDatabaseConnection();
+      if (mounted) setDbStatus(status);
+    };
+    verifyDb();
+    const interval = setInterval(verifyDb, 6000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   const t = translations[appLang];
 
@@ -212,6 +232,26 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="hidden xl:flex items-center space-x-1.5 bg-black/20 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/20 shadow-sm">
               <Cpu className="w-3.5 h-3.5 text-amber-300" />
               <span>{t.ramLabel}</span>
+            </div>
+
+            {/* Database Status Indicator */}
+            <div 
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg font-bold text-xs transition-all shadow-sm ${
+                dbStatus.isDbConnected
+                  ? 'bg-emerald-500/90 text-white border border-emerald-300 ring-1 ring-emerald-300/40'
+                  : 'bg-black/25 text-amber-300 border border-amber-400/30'
+              }`}
+              title={
+                dbStatus.isDbConnected 
+                  ? 'XAMPP MySQL Connected (Database: palash)' 
+                  : 'XAMPP MySQL Offline (Operating safely in Offline Database Mode)'
+              }
+            >
+              <Database className="w-3.5 h-3.5 text-amber-300" />
+              <span className={`w-2 h-2 rounded-full ${dbStatus.isDbConnected ? 'bg-emerald-300 animate-pulse' : 'bg-amber-400'}`}></span>
+              <span className="hidden sm:inline font-mono text-[11px]">
+                {dbStatus.isDbConnected ? '● DATABASE CONNECTED' : '● OFFLINE DATABASE MODE'}
+              </span>
             </div>
 
             {/* Offline Mode Switcher */}

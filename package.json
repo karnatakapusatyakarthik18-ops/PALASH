@@ -13,9 +13,9 @@
     "electron:build": "npm run build && node scripts/package-desktop.cjs",
     "package": "npm run build && node scripts/package-desktop.cjs",
     "app": "electron .",
-    "server": "node server.js",
+    "server": "node server/server.js",
     "preview": "vite preview",
-    "test": "npx tsx tests/verifyNLP.ts && npx tsx tests/verifyOfflineSTT.ts"
+    "test": "npx tsx tests/verifyNLP.ts && npx tsx tests/verifyOfflineSTT.ts && npx tsx tests/verifyAPI.ts"
   },
   "build": {
     "appId": "org.palash.vani",
@@ -33,11 +33,15 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "${productName}-${version}-${target}.${ext}"
@@ -52,7 +56,11 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "lucide-react": "^0.395.0",
+    "mysql2": "^3.24.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.3.0"
