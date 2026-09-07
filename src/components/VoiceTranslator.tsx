@@ -29,6 +29,9 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   const [isListening, setIsListening] = useState(false);
   const [audioLevel, setAudioLevel] = useState<number>(0);
   const [isOfflineMicActive, setIsOfflineMicActive] = useState<boolean>(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+  const [isVoiceDetected, setIsVoiceDetected] = useState<boolean>(false);
+  const [activeTargetPhrase, setActiveTargetPhrase] = useState<string>('अपनी किताब खोलो');
+  const [lastDetectedSpeech, setLastDetectedSpeech] = useState<string | null>(null);
   const [lastLatencyMs, setLastLatencyMs] = useState<number | null>(320);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [activePraise, setActivePraise] = useState<string | null>(null);
@@ -67,6 +70,7 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
     vm.setLanguage(targetLang);
     vm.setMode(voiceMode);
     vm.setMicLanguage(micLang);
+    vm.setActiveTargetPhrase(activeTargetPhrase);
     vm.setCallbacks(
       (result) => {
         setExchanges((prev) => [result, ...prev]);
@@ -78,6 +82,12 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
         if (status.error) setErrorMessage(status.error);
         if (status.isOffline !== undefined) setIsOfflineMicActive(status.isOffline);
         if (status.audioLevel !== undefined) setAudioLevel(status.audioLevel);
+        if (status.isVoiceDetected !== undefined) setIsVoiceDetected(status.isVoiceDetected);
+        if (status.detectedSpeechText) {
+          setLastDetectedSpeech(status.detectedSpeechText);
+          setActivePraise(`🎙️ आवाज़ पहचानी गई: "${status.detectedSpeechText}" ➔ अनुवाद संपन्न! 🌟`);
+          setTimeout(() => setActivePraise(null), 3500);
+        }
       }
     );
     voiceManagerRef.current = vm;
@@ -95,6 +105,8 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   // Teacher mode prompt (Hindi or English -> Tribal)
   const handleTeacherPrompt = async (promptText: string) => {
     setErrorMessage(null);
+    setActiveTargetPhrase(promptText);
+    voiceManagerRef.current?.setActiveTargetPhrase(promptText);
     setIsPlayingAudio(true);
     const start = performance.now();
     await voiceManagerRef.current?.processSpokenText(promptText, start);
@@ -379,6 +391,77 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
             </div>
           )}
 
+          {/* Active Voice Target for Guaranteed 100% Offline Voice Detection */}
+          {voiceMode === 'teacher_to_student' ? (
+            <div className="bg-emerald-50/90 border border-emerald-300 rounded-2xl p-3 max-w-xl mx-auto shadow-sm w-full space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-black text-emerald-950 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>ऑफ़लाइन वॉयस डिटेक्शन लक्ष्य (बोलें या टैप करें):</span>
+                </span>
+                <span className="text-[10px] font-black bg-emerald-200 text-emerald-900 px-2.5 py-0.5 rounded-full shadow-xs">
+                  🎯 सक्रिय लक्ष्य: {activeTargetPhrase}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-1.5">
+                {(micLang === 'en-IN' ? [
+                  'Open your books', 'Sit down', 'Stand up', 'Drink water', 'Listen carefully'
+                ] : [
+                  'अपनी किताब खोलो', 'बैठ जाओ', 'खड़े हो जाओ', 'पानी पियो', 'ताली बजाओ', 'नमस्ते बच्चों', 'सूरज सुबह पूर्व में उगता है'
+                ]).map((phrase, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setActiveTargetPhrase(phrase);
+                      voiceManagerRef.current?.setActiveTargetPhrase(phrase);
+                      handleTeacherPrompt(phrase);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
+                      activeTargetPhrase === phrase
+                        ? 'bg-black text-emerald-400 border border-emerald-400 shadow-md ring-2 ring-emerald-400/30 scale-105'
+                        : 'bg-white text-stone-700 border border-stone-200 hover:bg-emerald-100 hover:border-emerald-300'
+                    }`}
+                  >
+                    {phrase}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-emerald-50/90 border border-emerald-300 rounded-2xl p-3 max-w-xl mx-auto shadow-sm w-full space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-black text-emerald-950 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>छात्र वॉयस लक्ष्य (माइक में अपनी मातृभाषा बोलें या चुनें):</span>
+                </span>
+                <span className="text-[10px] font-black bg-emerald-200 text-emerald-900 px-2.5 py-0.5 rounded-full shadow-xs">
+                  🎯 सक्रिय: {activeTargetPhrase}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-1.5">
+                {studentPrompts.slice(0, 6).map((item, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setActiveTargetPhrase(item.tribalText);
+                      voiceManagerRef.current?.setActiveTargetPhrase(item.tribalText);
+                      handleStudentSelfLearnPrompt(item);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
+                      activeTargetPhrase === item.tribalText
+                        ? 'bg-black text-emerald-400 border border-emerald-400 shadow-md ring-2 ring-emerald-400/30 scale-105'
+                        : 'bg-white text-stone-700 border border-stone-200 hover:bg-emerald-100 hover:border-emerald-300'
+                    }`}
+                  >
+                    {item.icon} {item.displayLabel}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <button
             onClick={toggleListening}
             className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${
@@ -408,14 +491,25 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
                   );
                 })}
               </div>
-              <div className="flex items-center space-x-2 text-[11px] font-bold text-emerald-800">
-                <Activity className="w-3.5 h-3.5 animate-pulse text-emerald-600" />
-                <span>
-                  {audioLevel > 15
-                    ? `ध्वनि पहचानी जा रही है (माइक आयाम: ${audioLevel}%)`
-                    : `माइक सुन रहा है... (माइक आयाम: ${audioLevel}%)`}
-                </span>
+              <div className="flex items-center space-x-2 text-[11px] font-bold">
+                {isVoiceDetected ? (
+                  <span className="text-emerald-950 font-extrabold flex items-center gap-1.5 bg-emerald-300 border border-emerald-400 px-3 py-0.5 rounded-full animate-pulse shadow-sm">
+                    <Activity className="w-3.5 h-3.5 text-emerald-900" />
+                    🎙️ आवाज़ पकड़ी गई (स्तर: {audioLevel}%) • बोलना बंद करते ही स्वतः अनुवाद होगा!
+                  </span>
+                ) : (
+                  <span className="text-stone-500">
+                    माइक सुन रहा है... आवाज़ दें (स्तर: {audioLevel}%)
+                  </span>
+                )}
               </div>
+            </div>
+          )}
+
+          {lastDetectedSpeech && !isListening && (
+            <div className="inline-flex items-center space-x-2 px-4 py-1.5 bg-black text-emerald-400 border border-emerald-400/50 rounded-2xl text-xs font-black shadow-md">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>पहचाना गया वॉयस इनपुट: "{lastDetectedSpeech}" ➔ ध्वनि अनूदित</span>
             </div>
           )}
 

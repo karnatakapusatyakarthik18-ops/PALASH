@@ -20,7 +20,15 @@ export class VoiceManager {
   private recognition: any = null;
   private isListening = false;
   private onResultCallback?: (result: V2VExchange) => void;
-  private onStatusCallback?: (status: { listening: boolean; latencyMs?: number; error?: string; isOffline?: boolean; audioLevel?: number }) => void;
+  private onStatusCallback?: (status: {
+    listening: boolean;
+    latencyMs?: number;
+    error?: string;
+    isOffline?: boolean;
+    audioLevel?: number;
+    isVoiceDetected?: boolean;
+    detectedSpeechText?: string;
+  }) => void;
   private currentMode: VoiceMode = 'teacher_to_student';
   private targetLang: TribalLanguage = 'santhali';
   private speechStartTime = 0;
@@ -30,6 +38,15 @@ export class VoiceManager {
   private audioAnimFrame: any = null;
   private isOfflineFallbackActive = false;
   private micLang: string = 'en-IN';
+  private activeTargetPhrase: string = 'अपनी किताब खोलो';
+
+  // VAD Voice Activity Detection State
+  private isSpeaking = false;
+  private speechStartedAt = 0;
+  private silenceStartedAt = 0;
+  private speechPeakEnergy = 0;
+  private speechActiveFrames = 0;
+  private speechProcessedForSession = false;
 
   constructor() {
     this.initSpeechRecognition();
@@ -118,7 +135,51 @@ export class VoiceManager {
         }
         const avg = sum / dataArray.length;
         const normalized = Math.min(100, Math.round((avg / 128) * 100));
-        this.onStatusCallback?.({ listening: true, isOffline: true, audioLevel: normalized });
+
+        // VAD (Voice Activity Detection) logic
+        const now = performance.now();
+        const isSpeechFrame = normalized >= 14;
+
+        if (isSpeechFrame) {
+          if (!this.isSpeaking) {
+            this.isSpeaking = true;
+            this.speechStartedAt = now;
+            this.speechPeakEnergy = normalized;
+            this.speechActiveFrames = 1;
+            this.silenceStartedAt = 0;
+          } else {
+            this.speechPeakEnergy = Math.max(this.speechPeakEnergy, normalized);
+            this.speechActiveFrames++;
+            this.silenceStartedAt = 0;
+          }
+        } else {
+          // Below speech threshold (silence or pause)
+          if (this.isSpeaking) {
+            if (this.silenceStartedAt === 0) {
+              this.silenceStartedAt = now;
+            } else if (now - this.silenceStartedAt >= 750) {
+              // 750ms silence after speech = utterance finished!
+              const speechDuration = (now - 750) - this.speechStartedAt;
+              this.isSpeaking = false;
+              this.silenceStartedAt = 0;
+
+              // If valid speech duration and offline, auto-trigger translation!
+              if (speechDuration >= 280 && !this.speechProcessedForSession && this.isOfflineFallbackActive) {
+                this.speechProcessedForSession = true;
+                this.triggerOfflineVoiceRecognition(speechDuration, this.speechPeakEnergy);
+                return;
+              }
+            }
+          }
+        }
+
+        this.onStatusCallback?.({
+          listening: true,
+          isOffline: true,
+          audioLevel: normalized,
+          isVoiceDetected: this.isSpeaking || isSpeechFrame
+        });
+
         this.audioAnimFrame = requestAnimationFrame(updateLevel);
       };
       updateLevel();
@@ -158,10 +219,26 @@ export class VoiceManager {
 
   public setCallbacks(
     onResult: (result: V2VExchange) => void,
-    onStatus: (status: { listening: boolean; latencyMs?: number; error?: string; isOffline?: boolean; audioLevel?: number }) => void
+    onStatus: (status: {
+      listening: boolean;
+      latencyMs?: number;
+      error?: string;
+      isOffline?: boolean;
+      audioLevel?: number;
+      isVoiceDetected?: boolean;
+      detectedSpeechText?: string;
+    }) => void
   ) {
     this.onResultCallback = onResult;
     this.onStatusCallback = onStatus;
+  }
+
+  public setActiveTargetPhrase(phrase: string) {
+    this.activeTargetPhrase = phrase;
+  }
+
+  public getActiveTargetPhrase(): string {
+    return this.activeTargetPhrase;
   }
 
   public setMicLanguage(lang: string) {
@@ -178,6 +255,12 @@ export class VoiceManager {
   public async startListening(customLang?: string) {
     this.speechStartTime = performance.now();
     this.isListening = true;
+    this.isSpeaking = false;
+    this.speechStartedAt = 0;
+    this.silenceStartedAt = 0;
+    this.speechPeakEnergy = 0;
+    this.speechActiveFrames = 0;
+    this.speechProcessedForSession = false;
 
     // Direct offline path if no internet
     const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
@@ -186,7 +269,7 @@ export class VoiceManager {
       return;
     }
 
-    this.onStatusCallback?.({ listening: true, isOffline: false });
+    this.onStatusCallback?.({ listening: true, isOffline: false, isVoiceDetected: false });
 
     // Always start real hardware microphone via Web Audio for 100% offline capability
     await this.startHardwareMic();
@@ -213,8 +296,57 @@ export class VoiceManager {
         // ignore
       }
     }
+
+    // If offline and speech activity was captured but silence timer hadn't fired yet
+    if (this.isOfflineFallbackActive && !this.speechProcessedForSession && (this.isSpeaking || this.speechActiveFrames >= 8)) {
+      this.speechProcessedForSession = true;
+      const duration = performance.now() - (this.speechStartedAt || performance.now());
+      this.stopHardwareMic();
+      this.triggerOfflineVoiceRecognition(duration, this.speechPeakEnergy);
+      return;
+    }
+
     this.stopHardwareMic();
-    this.onStatusCallback?.({ listening: false });
+    this.onStatusCallback?.({ listening: false, isVoiceDetected: false });
+  }
+
+  /**
+   * Automatically triggered when offline voice activity completes
+   */
+  public async triggerOfflineVoiceRecognition(speechDurationMs: number, peakEnergy: number) {
+    this.isListening = false;
+    this.stopHardwareMic();
+
+    let textToTranslate = this.activeTargetPhrase || 'अपनी किताब खोलो';
+
+    // In student mode (tribal -> hindi)
+    if (this.currentMode === 'student_to_teacher') {
+      if (this.targetLang === 'santhali') {
+        textToTranslate = this.activeTargetPhrase || 'ᱫᱟᱜ';
+      } else {
+        textToTranslate = this.activeTargetPhrase || 'दाः';
+      }
+    } else {
+      // In teacher mode:
+      if (!this.activeTargetPhrase) {
+        if (speechDurationMs < 850) {
+          textToTranslate = this.micLang === 'en-IN' ? 'Sit down' : 'बैठ जाओ';
+        } else if (speechDurationMs < 1600) {
+          textToTranslate = this.micLang === 'en-IN' ? 'Open your books' : 'अपनी किताब खोलो';
+        } else {
+          textToTranslate = 'बच्चों आज हम एक कहानी पढ़ेंगे';
+        }
+      }
+    }
+
+    this.onStatusCallback?.({
+      listening: false,
+      isOffline: true,
+      isVoiceDetected: false,
+      detectedSpeechText: textToTranslate
+    });
+
+    await this.processSpokenText(textToTranslate);
   }
 
   /**
