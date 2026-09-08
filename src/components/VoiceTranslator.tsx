@@ -74,19 +74,19 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   const [audioLevel, setAudioLevel] = useState<number>(0);
   const [isOfflineMicActive, setIsOfflineMicActive] = useState<boolean>(typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [isVoiceDetected, setIsVoiceDetected] = useState<boolean>(false);
-  const [activeTargetPhrase, setActiveTargetPhrase] = useState<string>('बच्चे मैदान में खेल रहे हैं');
+  const [activeTargetPhrase, setActiveTargetPhrase] = useState<string>('');
   const [lastDetectedSpeech, setLastDetectedSpeech] = useState<string | null>(null);
   const [lastLatencyMs, setLastLatencyMs] = useState<number | null>(320);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [activePraise, setActivePraise] = useState<string | null>(null);
-  const [manualInput, setManualInput] = useState('बच्चे मैदान में खेल रहे हैं');
+  const [manualInput, setManualInput] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [detectedCandidates, setDetectedCandidates] = useState<SpeechMatchCandidate[]>([]);
   const [detectedSyllables, setDetectedSyllables] = useState<number | null>(null);
   const [detectedCentroid, setDetectedCentroid] = useState<number | null>(null);
   const [currentTranslation, setCurrentTranslation] = useState<TranslationResult | null>(() => {
-    return PalashNLPTranslator.translate('बच्चे मैदान में खेल रहे हैं', targetLang);
+    return PalashNLPTranslator.translate('नमस्ते बच्चों! सब अपनी जगह बैठ जाओ।', targetLang);
   });
   const [copied, setCopied] = useState(false);
 
@@ -726,11 +726,11 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
                   </button>
                   <button
                     type="button"
-                    onClick={() => forceCommitSpeech(manualInput || activeTargetPhrase)}
+                    onClick={toggleListening}
                     className="bg-emerald-400 hover:bg-emerald-300 text-black font-black px-4 py-2 rounded-xl text-xs shadow-md flex items-center space-x-1.5 transition-all hover:scale-105 active:scale-95"
                   >
                     <Zap className="w-4 h-4 text-black" />
-                    <span>⚡ तुरंत अनुवाद करें</span>
+                    <span>⚡ बोल लिया, अनुवाद करें</span>
                   </button>
                 </div>
               </div>
@@ -755,15 +755,19 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
                   if (manualInput.trim()) {
                     handleTeacherPrompt(manualInput.trim());
                   } else {
-                    forceCommitSpeech();
+                    toggleListening();
                   }
                 }}
                 className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black px-5 py-3.5 rounded-2xl text-xs shadow-lg flex items-center space-x-2.5 transition-all hover:scale-105 active:scale-95 border border-emerald-400/40"
               >
                 <Volume2 className="w-5 h-5 text-emerald-200 shrink-0" />
                 <div className="text-left">
-                  <div className="text-[10px] text-emerald-100 uppercase tracking-wider font-bold">1-टैप इनपुट अनुवाद</div>
-                  <div className="text-xs font-black">"{manualInput || activeTargetPhrase}" ➔ ध्वनि सुनें</div>
+                  <div className="text-[10px] text-emerald-100 uppercase tracking-wider font-bold">
+                    {manualInput.trim() ? 'टेक्स्ट अनुवाद' : 'ऑफ़लाइन ध्वनि अनुवाद'}
+                  </div>
+                  <div className="text-xs font-black">
+                    {manualInput.trim() ? `"${manualInput}" ➔ अनुवाद करें` : '🎙️ माइक चालू करें और बोलें'}
+                  </div>
                 </div>
               </button>
             </div>
@@ -776,12 +780,12 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
           </div>
         </div>
 
-        {/* 4. Categorized Scenario Presets & Quick Prompts */}
+        {/* 4. Common Classroom Sentences (Reference) */}
         <div className="space-y-3 pt-3 border-t border-stone-200 text-left">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-black text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              <span>त्वरित परिदृश्य एवं उदाहरण (Quick Demonstration Presets):</span>
+              <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+              <span>💡 सामान्य कक्षा वाक्य (Common Classroom Sentences - संदर्भ व अभ्यास):</span>
             </span>
 
             {/* Category filter tabs */}
@@ -818,12 +822,10 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
                   type="button"
                   onClick={() => {
                     setManualInput(preset.hindi);
-                    setActiveTargetPhrase(preset.hindi);
-                    voiceManagerRef.current?.setActiveTargetPhrase(preset.hindi);
                     handleTeacherPrompt(preset.hindi);
                   }}
                   className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-sm flex items-center space-x-1.5 border active:scale-95 ${
-                    activeTargetPhrase === preset.hindi
+                    manualInput === preset.hindi
                       ? 'bg-black text-emerald-400 border-emerald-400 shadow-md ring-2 ring-emerald-400/20'
                       : 'bg-white text-stone-700 border-stone-200 hover:bg-emerald-50 hover:border-emerald-300'
                   }`}

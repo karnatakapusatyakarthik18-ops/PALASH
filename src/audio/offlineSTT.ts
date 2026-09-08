@@ -855,10 +855,10 @@ export class OfflineSpeechRecognizer {
         sibilanceScore = 0.2;
       }
 
-      // 4. Active phrase affinity boost (if user is focusing on an active lesson/phrase)
+      // 4. Acoustic score calculation without artificial preset bias
       let activeBoost = 1.0;
       if (activeTargetPhrase && entry.text === activeTargetPhrase) {
-        activeBoost = 1.35;
+        activeBoost = 1.02; // Neutral 2% tie-breaker only, never overrides true acoustic matching
       }
 
       // Composite Weighted Score

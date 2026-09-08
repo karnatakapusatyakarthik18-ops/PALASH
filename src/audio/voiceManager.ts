@@ -157,11 +157,38 @@ export class VoiceManager {
             this.scriptProcessor = this.audioContext.createScriptProcessor(2048, 1, 1);
             this.gainMute = this.audioContext.createGain();
             this.gainMute.gain.value = 0; // Mute to prevent speaker feedback loop
+
+            const preRollQueue: Float32Array[] = [];
             this.scriptProcessor.onaudioprocess = (e: any) => {
               if (!this.isListening) return;
               const inputData = e.inputBuffer.getChannelData(0);
-              if (this.isSpeaking) {
-                this.recordedChunks.push(new Float32Array(inputData));
+              const chunk = new Float32Array(inputData);
+
+              // Calculate instant RMS directly on audio thread
+              let sumSq = 0;
+              for (let i = 0; i < chunk.length; i++) {
+                sumSq += chunk[i] * chunk[i];
+              }
+              const rms = Math.sqrt(sumSq / chunk.length);
+
+              // If sound energy is present (> 0.008), capture it immediately
+              if (rms > 0.008) {
+                if (!this.isSpeaking) {
+                  this.isSpeaking = true;
+                  this.speechStartedAt = performance.now();
+                  // Flush pre-roll buffer so onset of speech/syllable is never clipped
+                  while (preRollQueue.length > 0) {
+                    this.recordedChunks.push(preRollQueue.shift()!);
+                  }
+                }
+                this.recordedChunks.push(chunk);
+              } else if (this.isSpeaking) {
+                // Continuation during minor micro-pause within utterance
+                this.recordedChunks.push(chunk);
+              } else {
+                // Rolling pre-roll buffer keeps last 5 chunks (~230ms)
+                preRollQueue.push(chunk);
+                if (preRollQueue.length > 5) preRollQueue.shift();
               }
             };
             source.connect(this.scriptProcessor);
@@ -474,8 +501,7 @@ export class VoiceManager {
       const result = OfflineSpeechRecognizer.matchAcoustics(
         features,
         this.micLang as 'hi-IN' | 'en-IN',
-        this.currentMode,
-        this.activeTargetPhrase
+        this.currentMode
       );
 
       recognizedText = result.text;
@@ -485,18 +511,15 @@ export class VoiceManager {
       centroid = result.spectralCentroid;
       this.latestCandidates = candidates;
     } else {
-      // Acoustic fallback based on speech duration and active mode
-      if (this.currentMode === 'student_to_teacher') {
-        recognizedText = this.targetLang === 'santhali' ? 'ᱫᱟᱜ' : 'दाः';
-      } else {
-        if (speechDurationMs < 850) {
-          recognizedText = this.micLang === 'en-IN' ? 'Sit down' : 'बैठ जाओ';
-        } else if (speechDurationMs < 1600) {
-          recognizedText = this.micLang === 'en-IN' ? 'Open your books' : 'अपनी किताब खोलो';
-        } else {
-          recognizedText = this.activeTargetPhrase || 'बच्चों आज हम एक कहानी पढ़ेंगे';
-        }
-      }
+      // If microphone stream yielded no samples, notify user to speak into mic instead of guessing a preset
+      this.stopHardwareMic();
+      this.onStatusCallback?.({
+        listening: false,
+        isOffline: true,
+        isVoiceDetected: false,
+        error: 'आवाज़ स्पष्ट नहीं सुनाई दी — कृपया माइक के पास बोलें'
+      });
+      return;
     }
 
     this.stopHardwareMic();
