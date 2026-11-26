@@ -7,6 +7,7 @@ import {
   ArrowRight, Award, Edit3, Headphones, Camera, Radio, User, GraduationCap, Compass, Database, Globe
 } from 'lucide-react';
 import { useTheme } from '../theme/ThemeContext';
+import { PalashLogo } from './PalashLogo';
 
 interface HeroIntroProps {
   onSelectTab: (tab: string) => void;
@@ -260,7 +261,7 @@ export const HeroIntro: React.FC<HeroIntroProps> = ({
               <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-rose-500 to-violet-600 rounded-full blur-2xl opacity-60 group-hover:opacity-90 animate-pulse transition-opacity" />
               
               <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-white/95 backdrop-blur-lg p-3 shadow-2xl border-4 border-white/50 flex flex-col items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
-                <img src="/logo.svg" alt="PALASH Vani Logo" className="w-full h-full object-contain filter drop-shadow-md" />
+                <PalashLogo className="w-full h-full object-contain filter drop-shadow-md" />
               </div>
             </div>
 

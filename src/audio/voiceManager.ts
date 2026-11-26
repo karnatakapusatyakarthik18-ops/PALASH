@@ -397,21 +397,27 @@ export class VoiceManager {
     this.speechActiveFrames = 0;
     this.speechProcessedForSession = false;
 
-    // Direct offline path if no internet
-    const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-    if (isOffline) {
+    // Fast-path: In Electron or when offline, avoid Chromium SpeechRecognition hanging for 8s
+    const isElectronOrOffline = typeof window !== 'undefined' && (
+      (window as any).process?.type === 'renderer' ||
+      window.location.protocol === 'file:' ||
+      navigator.userAgent.includes('Electron') ||
+      !navigator.onLine
+    );
+
+    if (isElectronOrOffline) {
       await this.engageOfflineMicMode();
       return;
     }
 
     this.onStatusCallback?.({ listening: true, isOffline: false, isVoiceDetected: false });
 
-    // Always start real hardware microphone via Web Audio for 100% offline capability
+    // Start real hardware microphone via Web Audio for 100% offline capability
     await this.startHardwareMic();
 
     if (this.recognition) {
       try {
-        this.recognition.lang = customLang || this.micLang || 'en-IN';
+        this.recognition.lang = customLang || this.micLang || 'hi-IN';
         this.recognition.start();
       } catch (e) {
         console.warn('SpeechRecognition note:', e);

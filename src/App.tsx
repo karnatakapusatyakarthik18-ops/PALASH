@@ -18,6 +18,7 @@ import { LessonScriptViewer } from './components/LessonScriptViewer';
 import { OfflineDiagnostics } from './components/OfflineDiagnostics';
 import { DatasetExplorer } from './components/DatasetExplorer';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { PalashLogo } from './components/PalashLogo';
 import { useTheme } from './theme/ThemeContext';
 
 export type UserRole = 'all' | 'teacher' | 'student';
@@ -113,8 +114,8 @@ export const App: React.FC = () => {
       <footer className="no-print bg-white/80 backdrop-blur-md border-t border-slate-200/80 py-6 px-4 text-center text-xs text-slate-500 space-y-2">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-600">
           <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 rounded-full bg-orange-600 p-0.5 flex items-center justify-center shadow-sm">
-              <img src="/logo.svg" alt="Logo" className="w-full h-full" />
+            <div className="w-6 h-6 rounded-full bg-white p-0.5 flex items-center justify-center shadow-sm border border-stone-200">
+              <PalashLogo className="w-full h-full" />
             </div>
             <p className="font-extrabold text-slate-800">
               {t.footerMission}

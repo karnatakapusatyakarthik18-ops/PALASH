@@ -4,6 +4,7 @@ import { PalashPhoneticTTS } from '../audio/phoneticSynth';
 import { AppLanguage, translations } from '../i18n/translations';
 import { UserRole } from '../App';
 import { checkDatabaseConnection, DatabaseStatus } from '../services/api';
+import { PalashLogo } from './PalashLogo';
 import { 
   Wifi, WifiOff, Cpu, BookOpen, Layers, Mic, FileText, Sparkles, 
   Home, Volume2, Edit3, Headphones, Camera, Award, Radio, Compass, Database, Palette,
@@ -110,8 +111,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setCurrentTab('home')}
             className="flex items-center space-x-3 cursor-pointer group"
           >
-            <div className="w-10 h-10 rounded-full bg-white p-1 shadow-lg flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
-              <img src="/logo.svg" alt="PALASH Logo" className="w-full h-full" />
+            <div className="w-10 h-10 rounded-full bg-white p-0.5 shadow-lg flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300 ring-2 ring-white/50">
+              <PalashLogo className="w-full h-full" />
             </div>
             <div>
               <div className="flex items-center space-x-2">

@@ -7,6 +7,7 @@ import {
   ArrowRight, Check, CheckCircle2, ShieldCheck, Heart
 } from 'lucide-react';
 import { useTheme } from '../theme/ThemeContext';
+import { PalashLogo } from './PalashLogo';
 
 interface WelcomeScreenProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
           <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white p-2 shadow-2xl flex items-center justify-center shrink-0 border-2 border-white/60 transform hover:scale-105 transition-transform">
-              <img src="/logo.svg" alt="PALASH Vani Logo" className="w-full h-full object-contain" />
+              <PalashLogo className="w-full h-full object-contain" />
             </div>
 
             <div className="space-y-1.5 flex-1">

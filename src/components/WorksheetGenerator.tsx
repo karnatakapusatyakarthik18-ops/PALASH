@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TribalLanguage } from '../nlp/types';
 import { WORKSHEET_TEMPLATES } from '../curriculum/worksheetData';
 import { Printer, FileCheck } from 'lucide-react';
+import { PalashLogo } from './PalashLogo';
 
 interface WorksheetGeneratorProps {
   targetLang: TribalLanguage;
@@ -93,8 +94,8 @@ export const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ targetLa
             <div className="border-b-2 border-orange-950 pb-4 mb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-full border-2 border-orange-900 p-1 flex items-center justify-center">
-                    <img src="/logo.svg" alt="PALASH Logo" className="w-full h-full" />
+                  <div className="w-12 h-12 rounded-full border-2 border-orange-900 p-0.5 flex items-center justify-center bg-white shadow-sm">
+                    <PalashLogo className="w-full h-full" />
                   </div>
                   <div>
                     <h1 className="text-lg md:text-xl font-black text-orange-950 tracking-tight">
