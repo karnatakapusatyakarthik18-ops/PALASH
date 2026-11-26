@@ -1813,6 +1813,48 @@ function transliterateDevanagariToLatin(input) {
   return cleanToAscii(translatedWords.join(" "));
 }
 
+// src/services/onlineTranslator.ts
+async function translateToHindiOnline(text) {
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    return null;
+  }
+  const clean = text.trim();
+  if (!clean) return null;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=hi&dt=t&q=${encodeURIComponent(clean)}`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data[0] && Array.isArray(data[0])) {
+        const fullTranslation = data[0].map((item) => item[0]).join("");
+        if (fullTranslation && fullTranslation.trim()) {
+          return fullTranslation.trim();
+        }
+      }
+    }
+  } catch (err) {
+  }
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2e3);
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(clean)}&langpair=en|hi`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      const translated = data?.responseData?.translatedText;
+      if (translated && !translated.includes("MYMEMORY WARNING") && translated.trim()) {
+        return translated.trim();
+      }
+    }
+  } catch (err) {
+  }
+  return null;
+}
+
 // src/nlp/classroomDict.ts
 var CLASSROOM_VOCABULARY_MAP = {
   // --- Pronouns & People ---
@@ -3557,7 +3599,84 @@ var ENGLISH_TO_HINDI_NOUNS = {
   is: "\u0939\u0948",
   are: "\u0939\u0948\u0902",
   were: "\u0925\u0947",
-  was: "\u0925\u093E"
+  was: "\u0925\u093E",
+  i: "\u092E\u0948\u0902",
+  me: "\u092E\u0941\u091D\u0947",
+  my: "\u092E\u0947\u0930\u093E",
+  mine: "\u092E\u0947\u0930\u093E",
+  you: "\u0924\u0941\u092E",
+  yours: "\u0924\u0941\u092E\u094D\u0939\u093E\u0930\u093E",
+  he: "\u0935\u0939",
+  she: "\u0935\u0939",
+  it: "\u092F\u0939",
+  his: "\u0909\u0938\u0915\u093E",
+  her: "\u0909\u0938\u0915\u093E",
+  they: "\u0935\u0947",
+  them: "\u0909\u0928\u094D\u0939\u0947\u0902",
+  their: "\u0909\u0928\u0915\u093E",
+  this: "\u092F\u0939",
+  that: "\u0935\u0939",
+  these: "\u092F\u0947",
+  those: "\u0935\u0947",
+  here: "\u092F\u0939\u093E\u0901",
+  there: "\u0935\u0939\u093E\u0901",
+  go: "\u091C\u093E\u0913",
+  going: "\u091C\u093E \u0930\u0939\u0947",
+  goes: "\u091C\u093E\u0924\u093E \u0939\u0948",
+  went: "\u0917\u092F\u093E",
+  come: "\u0906\u0913",
+  coming: "\u0906 \u0930\u0939\u0947",
+  comes: "\u0906\u0924\u093E \u0939\u0948",
+  came: "\u0906\u092F\u093E",
+  want: "\u091A\u093E\u0939\u093F\u090F",
+  wants: "\u091A\u093E\u0939\u093F\u090F",
+  need: "\u091A\u093E\u0939\u093F\u090F",
+  needs: "\u091A\u093E\u0939\u093F\u090F",
+  like: "\u092A\u0938\u0902\u0926",
+  have: "\u092A\u093E\u0938 \u0939\u0948",
+  has: "\u092A\u093E\u0938 \u0939\u0948",
+  speak: "\u092C\u094B\u0932\u094B",
+  say: "\u0915\u0939\u094B",
+  tell: "\u092C\u0924\u093E\u0913",
+  learn: "\u0938\u0940\u0916\u094B",
+  teach: "\u0938\u093F\u0916\u093E\u0913",
+  help: "\u092E\u0926\u0926",
+  take: "\u0932\u094B",
+  wash: "\u0927\u094B \u0932\u094B",
+  mother: "\u092E\u093E\u0901",
+  mom: "\u092E\u093E\u0901",
+  father: "\u092A\u093F\u0924\u093E",
+  dad: "\u092A\u093F\u0924\u093E",
+  brother: "\u092D\u093E\u0908",
+  sister: "\u092C\u0939\u0928",
+  friend: "\u0926\u094B\u0938\u094D\u0924",
+  friends: "\u0926\u094B\u0938\u094D\u0924",
+  family: "\u092A\u0930\u093F\u0935\u093E\u0930",
+  boy: "\u0932\u095C\u0915\u093E",
+  boys: "\u0932\u095C\u0915\u0947",
+  girl: "\u0932\u095C\u0915\u0940",
+  girls: "\u0932\u095C\u0915\u093F\u092F\u093E\u0901",
+  man: "\u0906\u0926\u092E\u0940",
+  woman: "\u092E\u0939\u093F\u0932\u093E",
+  house: "\u0918\u0930",
+  home: "\u0918\u0930",
+  pen: "\u0915\u0932\u092E",
+  pencil: "\u092A\u0947\u0902\u0938\u093F\u0932",
+  bag: "\u092C\u0938\u094D\u0924\u093E",
+  table: "\u092E\u0947\u091C",
+  chair: "\u0915\u0941\u0930\u094D\u0938\u0940",
+  door: "\u0926\u0930\u0935\u093E\u091C\u093E",
+  window: "\u0916\u093F\u095C\u0915\u0940",
+  class: "\u0915\u0915\u094D\u0937\u093E",
+  classroom: "\u0915\u0915\u094D\u0937\u093E",
+  road: "\u0930\u093E\u0938\u094D\u0924\u093E",
+  food: "\u0916\u093E\u0928\u093E",
+  clothes: "\u0915\u092A\u095C\u0947",
+  shoes: "\u091C\u0942\u0924\u0947",
+  name: "\u0928\u093E\u092E",
+  time: "\u0938\u092E\u092F",
+  india: "\u092D\u093E\u0930\u0924",
+  jharkhand: "\u091D\u093E\u0930\u0916\u0923\u094D\u0921"
 };
 var PalashNLPTranslator = class {
   static lexicons = {
@@ -3608,6 +3727,37 @@ var PalashNLPTranslator = class {
       normalized = "\u0936\u093E\u0902\u0924 \u0930\u0939\u094B";
     } else if (ENGLISH_TO_HINDI_NOUNS[cleaned]) {
       normalized = ENGLISH_TO_HINDI_NOUNS[cleaned];
+    } else if (/^where\s+is\s+(the\s+|my\s+|your\s+)?([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^where\s+is\s+(the\s+|my\s+|your\s+)?([a-z]+)/i);
+      if (match && match[2]) {
+        const nH = ENGLISH_TO_HINDI_NOUNS[match[2]] || match[2];
+        normalized = `${nH} \u0915\u0939\u093E\u0901 \u0939\u0948`;
+      }
+    } else if (/^i\s+(want|need)\s+(some\s+|a\s+|the\s+)?([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^i\s+(want|need)\s+(some\s+|a\s+|the\s+)?([a-z]+)/i);
+      if (match && match[3]) {
+        const nH = ENGLISH_TO_HINDI_NOUNS[match[3]] || match[3];
+        normalized = `\u092E\u0941\u091D\u0947 ${nH} \u091A\u093E\u0939\u093F\u090F`;
+      }
+    } else if (/^give\s+me\s+(some\s+|a\s+|the\s+)?([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^give\s+me\s+(some\s+|a\s+|the\s+)?([a-z]+)/i);
+      if (match && match[2]) {
+        const nH = ENGLISH_TO_HINDI_NOUNS[match[2]] || match[2];
+        normalized = `\u092E\u0941\u091D\u0947 ${nH} \u0926\u094B`;
+      }
+    } else if (/what('?s|\s+is)\s+your\s+name/i.test(cleaned)) {
+      normalized = "\u0924\u0941\u092E\u094D\u0939\u093E\u0930\u093E \u0928\u093E\u092E \u0915\u094D\u092F\u093E \u0939\u0948";
+    } else if (/^my\s+name\s+is\s+([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^my\s+name\s+is\s+([a-z]+)/i);
+      if (match && match[1]) {
+        normalized = `\u092E\u0947\u0930\u093E \u0928\u093E\u092E ${match[1]} \u0939\u0948`;
+      }
+    } else if (/^i\s+am\s+going\s+to\s+([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^i\s+am\s+going\s+to\s+([a-z]+)/i);
+      if (match && match[1]) {
+        const nH = ENGLISH_TO_HINDI_NOUNS[match[1]] || match[1];
+        normalized = `\u092E\u0948\u0902 ${nH} \u091C\u093E \u0930\u0939\u093E \u0939\u0942\u0901`;
+      }
     }
     const exact = lexicon.find(
       (item) => item.hindi.toLowerCase() === normalized || item.hindi.toLowerCase() === cleaned || normalized.includes(item.hindi.toLowerCase()) && normalized.length === item.hindi.length
@@ -3976,6 +4126,39 @@ var PalashNLPTranslator = class {
     const list = this.lexicons[lang];
     if (!category || category === "all") return list;
     return list.filter((item) => item.category === category);
+  }
+  /**
+   * High-accuracy translation with transparent online translation bridge.
+   * If online and input is English or contains Latin text, accurately maps to Hindi first,
+   * then applies authentic tribal translation (Santhali Ol Chiki, Ho Warang Chiti, Mundari).
+   * Seamlessly falls back to local offline NLP if network is unavailable.
+   */
+  static async translateWithOnlineFallback(inputText, targetLang) {
+    const cleaned = inputText.trim();
+    if (!cleaned) {
+      return this.translate(inputText, targetLang);
+    }
+    const isEnglishSource = /[a-zA-Z]/.test(cleaned);
+    if (isEnglishSource && typeof navigator !== "undefined" && navigator.onLine) {
+      try {
+        const hindiText = await translateToHindiOnline(cleaned);
+        if (hindiText && hindiText.trim()) {
+          const res = this.translate(hindiText.trim(), targetLang);
+          return {
+            ...res,
+            sourceText: cleaned,
+            // Preserve original user English input exactly
+            sourceLang: "english",
+            tokens: [
+              { hindi: `English: "${cleaned}" \u2794 ${hindiText.trim()}`, target: res.targetText, phonetic: res.devanagariPhonetic },
+              ...res.tokens || []
+            ]
+          };
+        }
+      } catch (e) {
+      }
+    }
+    return this.translate(inputText, targetLang);
   }
 };
 export {

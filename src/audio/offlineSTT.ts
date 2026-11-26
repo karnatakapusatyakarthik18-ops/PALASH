@@ -883,14 +883,10 @@ export class OfflineSpeechRecognizer {
       category: c.entry.category
     }));
 
-    // Fallback if no candidate scored well
-    let bestText = top ? top.entry.text : (
-      isStudent 
-        ? 'ᱫᱟᱜ' 
-        : (isEnglish ? 'Open your books' : 'अपनी किताब खोलो')
-    );
-
-    let confidence = top ? Math.min(0.98, Math.max(0.75, Math.round(top.score * 100) / 100)) : 0.85;
+    // High-precision acoustic validation: Only accept if candidate score meets threshold
+    const isConfidentMatch = top && top.score >= 0.65;
+    const bestText = isConfidentMatch ? top.entry.text : '';
+    const confidence = isConfidentMatch ? Math.min(0.98, Math.max(0.70, Math.round(top.score * 100) / 100)) : 0;
 
     return {
       text: bestText,
@@ -898,8 +894,8 @@ export class OfflineSpeechRecognizer {
       detectedSyllables: features.syllableCount,
       durationMs: features.durationMs,
       spectralCentroid: features.spectralCentroid,
-      candidates: topCandidates,
-      isAcousticMatch: true
+      candidates: isConfidentMatch ? topCandidates : [],
+      isAcousticMatch: isConfidentMatch
     };
   }
 }

@@ -3,6 +3,7 @@ import { SANTHALI_LEXICON } from './lexicons/santhali';
 import { HO_LEXICON } from './lexicons/ho';
 import { MUNDARI_LEXICON } from './lexicons/mundari';
 import { transliterateDevanagariToLatin } from '../audio/transliterate';
+import { translateToHindiOnline } from '../services/onlineTranslator';
 import { 
   CLASSROOM_VOCABULARY_MAP, 
   lemmatizeHindiWord, 
@@ -296,7 +297,84 @@ const ENGLISH_TO_HINDI_NOUNS: Record<string, string> = {
   is: 'है',
   are: 'हैं',
   were: 'थे',
-  was: 'था'
+  was: 'था',
+  i: 'मैं',
+  me: 'मुझे',
+  my: 'मेरा',
+  mine: 'मेरा',
+  you: 'तुम',
+  yours: 'तुम्हारा',
+  he: 'वह',
+  she: 'वह',
+  it: 'यह',
+  his: 'उसका',
+  her: 'उसका',
+  they: 'वे',
+  them: 'उन्हें',
+  their: 'उनका',
+  this: 'यह',
+  that: 'वह',
+  these: 'ये',
+  those: 'वे',
+  here: 'यहाँ',
+  there: 'वहाँ',
+  go: 'जाओ',
+  going: 'जा रहे',
+  goes: 'जाता है',
+  went: 'गया',
+  come: 'आओ',
+  coming: 'आ रहे',
+  comes: 'आता है',
+  came: 'आया',
+  want: 'चाहिए',
+  wants: 'चाहिए',
+  need: 'चाहिए',
+  needs: 'चाहिए',
+  like: 'पसंद',
+  have: 'पास है',
+  has: 'पास है',
+  speak: 'बोलो',
+  say: 'कहो',
+  tell: 'बताओ',
+  learn: 'सीखो',
+  teach: 'सिखाओ',
+  help: 'मदद',
+  take: 'लो',
+  wash: 'धो लो',
+  mother: 'माँ',
+  mom: 'माँ',
+  father: 'पिता',
+  dad: 'पिता',
+  brother: 'भाई',
+  sister: 'बहन',
+  friend: 'दोस्त',
+  friends: 'दोस्त',
+  family: 'परिवार',
+  boy: 'लड़का',
+  boys: 'लड़के',
+  girl: 'लड़की',
+  girls: 'लड़कियाँ',
+  man: 'आदमी',
+  woman: 'महिला',
+  house: 'घर',
+  home: 'घर',
+  pen: 'कलम',
+  pencil: 'पेंसिल',
+  bag: 'बस्ता',
+  table: 'मेज',
+  chair: 'कुर्सी',
+  door: 'दरवाजा',
+  window: 'खिड़की',
+  class: 'कक्षा',
+  classroom: 'कक्षा',
+  road: 'रास्ता',
+  food: 'खाना',
+  clothes: 'कपड़े',
+  shoes: 'जूते',
+  name: 'नाम',
+  time: 'समय',
+  india: 'भारत',
+  jharkhand: 'झारखण्ड'
 };
 
 export class PalashNLPTranslator {
@@ -351,6 +429,37 @@ export class PalashNLPTranslator {
       normalized = 'शांत रहो';
     } else if (ENGLISH_TO_HINDI_NOUNS[cleaned]) {
       normalized = ENGLISH_TO_HINDI_NOUNS[cleaned];
+    } else if (/^where\s+is\s+(the\s+|my\s+|your\s+)?([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^where\s+is\s+(the\s+|my\s+|your\s+)?([a-z]+)/i);
+      if (match && match[2]) {
+        const nH = ENGLISH_TO_HINDI_NOUNS[match[2]] || match[2];
+        normalized = `${nH} कहाँ है`;
+      }
+    } else if (/^i\s+(want|need)\s+(some\s+|a\s+|the\s+)?([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^i\s+(want|need)\s+(some\s+|a\s+|the\s+)?([a-z]+)/i);
+      if (match && match[3]) {
+        const nH = ENGLISH_TO_HINDI_NOUNS[match[3]] || match[3];
+        normalized = `मुझे ${nH} चाहिए`;
+      }
+    } else if (/^give\s+me\s+(some\s+|a\s+|the\s+)?([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^give\s+me\s+(some\s+|a\s+|the\s+)?([a-z]+)/i);
+      if (match && match[2]) {
+        const nH = ENGLISH_TO_HINDI_NOUNS[match[2]] || match[2];
+        normalized = `मुझे ${nH} दो`;
+      }
+    } else if (/what('?s|\s+is)\s+your\s+name/i.test(cleaned)) {
+      normalized = 'तुम्हारा नाम क्या है';
+    } else if (/^my\s+name\s+is\s+([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^my\s+name\s+is\s+([a-z]+)/i);
+      if (match && match[1]) {
+        normalized = `मेरा नाम ${match[1]} है`;
+      }
+    } else if (/^i\s+am\s+going\s+to\s+([a-z]+)/i.test(cleaned)) {
+      const match = cleaned.match(/^i\s+am\s+going\s+to\s+([a-z]+)/i);
+      if (match && match[1]) {
+        const nH = ENGLISH_TO_HINDI_NOUNS[match[1]] || match[1];
+        normalized = `मैं ${nH} जा रहा हूँ`;
+      }
     }
 
     // 1. Exact Phrase Match in Lexicon (matches either original Hindi or normalized intent)
@@ -801,5 +910,47 @@ export class PalashNLPTranslator {
     const list = this.lexicons[lang];
     if (!category || category === 'all') return list;
     return list.filter(item => item.category === category);
+  }
+
+  /**
+   * High-accuracy translation with transparent online translation bridge.
+   * If online and input is English or contains Latin text, accurately maps to Hindi first,
+   * then applies authentic tribal translation (Santhali Ol Chiki, Ho Warang Chiti, Mundari).
+   * Seamlessly falls back to local offline NLP if network is unavailable.
+   */
+  public static async translateWithOnlineFallback(
+    inputText: string, 
+    targetLang: TribalLanguage
+  ): Promise<TranslationResult> {
+    const cleaned = inputText.trim();
+    if (!cleaned) {
+      return this.translate(inputText, targetLang);
+    }
+
+    const isEnglishSource = /[a-zA-Z]/.test(cleaned);
+
+    // If online and source has English words, translate English to Hindi via online bridge
+    if (isEnglishSource && typeof navigator !== 'undefined' && navigator.onLine) {
+      try {
+        const hindiText = await translateToHindiOnline(cleaned);
+        if (hindiText && hindiText.trim()) {
+          const res = this.translate(hindiText.trim(), targetLang);
+          return {
+            ...res,
+            sourceText: cleaned, // Preserve original user English input exactly
+            sourceLang: 'english',
+            tokens: [
+              { hindi: `English: "${cleaned}" ➔ ${hindiText.trim()}`, target: res.targetText, phonetic: res.devanagariPhonetic },
+              ...(res.tokens || [])
+            ]
+          };
+        }
+      } catch (e) {
+        // Fall through to offline translation
+      }
+    }
+
+    // Default offline local translation
+    return this.translate(inputText, targetLang);
   }
 }

@@ -25,6 +25,7 @@ export interface VoiceManagerStatus {
   audioLevel?: number;
   isVoiceDetected?: boolean;
   detectedSpeechText?: string;
+  interimText?: string;
   candidates?: SpeechMatchCandidate[];
   detectedSyllables?: number;
   spectralCentroid?: number;
@@ -70,7 +71,7 @@ export class VoiceManager {
       try {
         this.recognition = new SpeechRecognition();
         this.recognition.continuous = false;
-        this.recognition.interimResults = false;
+        this.recognition.interimResults = true; // Enables live streaming of words as user speaks
         this.recognition.maxAlternatives = 1;
 
         this.recognition.onstart = () => {
@@ -88,10 +89,14 @@ export class VoiceManager {
         };
 
         this.recognition.onerror = (event: any) => {
-          console.warn('SpeechRecognition note (switching to offline hardware mic mode):', event.error);
-          // If network error (offline) or unsupported, engage offline hardware microphone mode
-          if (event.error === 'network' || event.error === 'not-allowed' || event.error === 'no-speech' || event.error === 'service-not-allowed') {
+          console.warn('SpeechRecognition note:', event.error);
+          // If offline or network unavailable, fall back to offline hardware mic
+          if (event.error === 'network' || event.error === 'service-not-allowed') {
             this.engageOfflineMicMode();
+          } else if (event.error === 'no-speech') {
+            this.isListening = false;
+            this.stopHardwareMic();
+            this.onStatusCallback?.({ listening: false, error: 'कोई आवाज़ नहीं सुनाई दी — कृपया माइक के पास बोलें' });
           } else {
             this.isListening = false;
             this.stopHardwareMic();
@@ -100,10 +105,37 @@ export class VoiceManager {
         };
 
         this.recognition.onresult = async (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          const recogEndTime = performance.now();
-          this.stopHardwareMic();
-          await this.processSpokenText(transcript, recogEndTime);
+          let interimTranscript = '';
+          let finalTranscript = '';
+
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+
+          // Live interim streaming so user sees their words immediately
+          if (interimTranscript) {
+            this.onStatusCallback?.({
+              listening: true,
+              interimText: interimTranscript.trim()
+            });
+          }
+
+          // Final result recognized
+          if (finalTranscript && finalTranscript.trim()) {
+            const clean = finalTranscript.trim();
+            const recogEndTime = performance.now();
+            this.stopHardwareMic();
+            this.onStatusCallback?.({
+              listening: false,
+              detectedSpeechText: clean
+            });
+            await this.processSpokenText(clean, recogEndTime);
+          }
         };
       } catch (err) {
         console.warn('SpeechRecognition initialization note:', err);
@@ -397,31 +429,29 @@ export class VoiceManager {
     this.speechActiveFrames = 0;
     this.speechProcessedForSession = false;
 
-    // Fast-path: In Electron or when offline, avoid Chromium SpeechRecognition hanging for 8s
-    const isElectronOrOffline = typeof window !== 'undefined' && (
-      (window as any).process?.type === 'renderer' ||
-      window.location.protocol === 'file:' ||
-      navigator.userAgent.includes('Electron') ||
-      !navigator.onLine
-    );
+    const targetMicLang = customLang || this.micLang || 'hi-IN';
+    const isExplicitlyOffline = typeof navigator !== 'undefined' && !navigator.onLine;
 
-    if (isElectronOrOffline) {
+    // If completely offline and no recognition object, engage offline hardware mic
+    if (isExplicitlyOffline && !this.recognition) {
       await this.engageOfflineMicMode();
       return;
     }
 
-    this.onStatusCallback?.({ listening: true, isOffline: false, isVoiceDetected: false });
+    this.onStatusCallback?.({ listening: true, isOffline: isExplicitlyOffline, isVoiceDetected: false });
 
-    // Start real hardware microphone via Web Audio for 100% offline capability
+    // Always start real hardware microphone for audio level waveform visualization
     await this.startHardwareMic();
 
     if (this.recognition) {
       try {
-        this.recognition.lang = customLang || this.micLang || 'hi-IN';
+        this.recognition.lang = targetMicLang;
         this.recognition.start();
-      } catch (e) {
-        console.warn('SpeechRecognition note:', e);
-        this.engageOfflineMicMode();
+      } catch (e: any) {
+        console.warn('SpeechRecognition start note:', e);
+        if (isExplicitlyOffline) {
+          this.engageOfflineMicMode();
+        }
       }
     } else {
       this.engageOfflineMicMode();
@@ -517,7 +547,6 @@ export class VoiceManager {
       centroid = result.spectralCentroid;
       this.latestCandidates = candidates;
     } else {
-      // If microphone stream yielded no samples, notify user to speak into mic instead of guessing a preset
       this.stopHardwareMic();
       this.onStatusCallback?.({
         listening: false,
@@ -529,6 +558,17 @@ export class VoiceManager {
     }
 
     this.stopHardwareMic();
+
+    // If acoustic recognition did not find a confident match, notify cleanly without hallucinating
+    if (!recognizedText) {
+      this.onStatusCallback?.({
+        listening: false,
+        isOffline: true,
+        isVoiceDetected: false,
+        error: 'ऑफ़लाइन: आवाज़ स्पष्ट नहीं पहचानी गई — कृपया माइक के पास बोलें या नीचे टेक्स्ट लिखें।'
+      });
+      return;
+    }
 
     this.onStatusCallback?.({
       listening: false,
@@ -552,6 +592,11 @@ export class VoiceManager {
    */
   public async processSpokenText(text: string, startTimeOverride?: number): Promise<V2VExchange> {
     const startTime = startTimeOverride || performance.now();
+    const cleanText = text.trim();
+    if (!cleanText) {
+      this.onStatusCallback?.({ listening: false });
+      return null as any;
+    }
 
     let translatedText = '';
     let phoneticText = '';
@@ -559,7 +604,8 @@ export class VoiceManager {
     let confidence = 0.95;
 
     if (this.currentMode === 'teacher_to_student') {
-      const result = PalashNLPTranslator.translate(text, this.targetLang);
+      // Use high-accuracy translation with online fallback if available
+      const result = await PalashNLPTranslator.translateWithOnlineFallback(cleanText, this.targetLang);
       translatedText = result.targetText;
       phoneticText = result.devanagariPhonetic;
       englishPhonetic = result.englishPhonetic;
@@ -569,7 +615,7 @@ export class VoiceManager {
       PalashPhoneticTTS.speakOffline(translatedText, phoneticText, englishPhonetic, this.targetLang);
     } else {
       // Student to Teacher (Tribal -> Hindi)
-      const result = PalashNLPTranslator.translateTribalToHindi(text, this.targetLang);
+      const result = PalashNLPTranslator.translateTribalToHindi(cleanText, this.targetLang);
       translatedText = result.hindiText;
       phoneticText = result.hindiText;
       englishPhonetic = result.hindiText;
@@ -585,17 +631,17 @@ export class VoiceManager {
     const exchange: V2VExchange = {
       id: 'v2v_' + Date.now(),
       mode: this.currentMode,
-      sourceText: text,
+      sourceText: cleanText,
       translatedText,
       phoneticText,
       englishPhonetic,
-      latencyMs: Math.max(120, latencyMs),
+      latencyMs: Math.max(15, latencyMs),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       confidence
     };
 
     this.onResultCallback?.(exchange);
-    this.onStatusCallback?.({ listening: false, latencyMs: exchange.latencyMs });
+    this.onStatusCallback?.({ listening: false, latencyMs: exchange.latencyMs, detectedSpeechText: cleanText });
     return exchange;
   }
 }

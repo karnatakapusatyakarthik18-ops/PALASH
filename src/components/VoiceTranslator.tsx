@@ -83,7 +83,12 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
         if (status.isVoiceDetected !== undefined) setIsVoiceDetected(status.isVoiceDetected);
         if (status.error) setErrorMessage(status.error);
 
-        // When speech is recognized from the mic
+        // Live interim speech streaming so user sees their words immediately as they speak
+        if (status.interimText) {
+          setInputText(status.interimText);
+        }
+
+        // When final speech is recognized from the mic
         if (status.detectedSpeechText) {
           const phrase = status.detectedSpeechText.trim();
           if (phrase) {
@@ -101,7 +106,7 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   }, [activeLang, micLang]);
 
   // Core Translation & Voice Output Function
-  const handleExecuteTranslation = (textToTranslate: string, autoSpeak: boolean = true) => {
+  const handleExecuteTranslation = async (textToTranslate: string, autoSpeak: boolean = true) => {
     const clean = textToTranslate.trim();
     if (!clean) return;
 
@@ -110,8 +115,8 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
     voiceManagerRef.current?.setActiveTargetPhrase(clean);
 
     const start = performance.now();
-    // 1. Instant O(1) Offline Translation
-    const res = PalashNLPTranslator.translate(clean, activeLang);
+    // 1. High-accuracy Translation (Online bridge for arbitrary sentences + 100% offline fallback)
+    const res = await PalashNLPTranslator.translateWithOnlineFallback(clean, activeLang);
     const latency = Math.round(performance.now() - start);
     setLastLatencyMs(Math.max(12, latency));
     setTranslation(res);
@@ -146,15 +151,16 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
   // Re-run translation when target language changes
   useEffect(() => {
     if (inputText) {
-      const res = PalashNLPTranslator.translate(inputText, activeLang);
-      setTranslation(res);
-      // Automatically speak output in the newly selected tribal language
-      PalashPhoneticTTS.speakOffline(
-        res.targetText,
-        res.devanagariPhonetic,
-        res.englishPhonetic,
-        activeLang
-      );
+      PalashNLPTranslator.translateWithOnlineFallback(inputText, activeLang).then((res) => {
+        setTranslation(res);
+        // Automatically speak output in the newly selected tribal language
+        PalashPhoneticTTS.speakOffline(
+          res.targetText,
+          res.devanagariPhonetic,
+          res.englishPhonetic,
+          activeLang
+        );
+      });
     }
   }, [activeLang]);
 
@@ -451,6 +457,11 @@ export const VoiceTranslator: React.FC<VoiceTranslatorProps> = ({ targetLang }) 
             <div className="text-2xl sm:text-3xl font-black text-emerald-300 tracking-wide font-olchiki leading-relaxed">
               {translation.targetText}
             </div>
+            {translation.tokens && translation.tokens[0]?.hindi && translation.tokens[0].hindi.includes('➔') && (
+              <div className="text-xs text-amber-300 font-bold bg-amber-950/60 border border-amber-800/80 rounded-xl px-3 py-1.5 inline-block">
+                🇮🇳 {translation.tokens[0].hindi}
+              </div>
+            )}
           </div>
 
           {/* Pronunciation Guides */}
