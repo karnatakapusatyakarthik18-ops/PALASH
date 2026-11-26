@@ -13,7 +13,9 @@ export type WordCategory =
   | 'body'
   | 'actions'
   | 'feelings'
-  | 'questions';
+  | 'questions'
+  | 'needs'
+  | 'conversation';
 
 export interface VocabularyItem {
   id: string;

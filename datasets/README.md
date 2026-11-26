@@ -11,6 +11,7 @@ This directory contains processed tribal language datasets sourced from **Kaggle
 | `kaggle_ol_chiki_alphabet.json` | Kaggle (`ai4bharat/ol-chiki-ocr`) | Complete 30 Ol Chiki alphabets, 10 digits, IPA phonetic transcriptions, Hindi/English transliterations, and glyph meanings. | 40 items | CC-BY-4.0 |
 | `kaggle_indic_parallel_corpus.json` | Kaggle (`ai4bharat/indic-corpus`) | Parallel alignment of primary school commands and NIPUN Bharat FLN competencies in Hindi, Santhali (Ol Chiki + Devanagari), Ho, and Mundari. | 24 pairs | CC-BY-4.0 |
 | `kaggle_storyweaver_tales.json` | Kaggle (`prathambooks/storyweaver`) | Graded bilingual reading folk tales for Grade 1-3 tribal learners with synchronized moral takeaways. | Multi-story | CC-BY-4.0 |
+| `kaggle_hindi_mundari_corpus.json` | Kaggle (`haradibots/hindi-mundari-translation-data`) / Microsoft Research India, IIT Kharagpur & Karya | Comprehensive Hindi-to-Mundari parallel translation corpus curated for primary education, daily communication, and indigenous language revitalization. | 17,826 pairs | BY-NC-SA-FS |
 
 ---
 

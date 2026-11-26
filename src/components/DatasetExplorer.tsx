@@ -5,14 +5,16 @@ import { PalashPhoneticTTS } from '../audio/phoneticSynth';
 import olChikiData from '../../datasets/kaggle_ol_chiki_alphabet.json';
 import parallelCorpusData from '../../datasets/kaggle_indic_parallel_corpus.json';
 import storyweaverData from '../../datasets/kaggle_storyweaver_tales.json';
+import mundariCorpusData from '../../datasets/kaggle_hindi_mundari_corpus.json';
 
 interface DatasetExplorerProps {
   currentLang: TribalLanguage;
 }
 
 export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ currentLang }) => {
-  const [activeTab, setActiveTab] = useState<'olChiki' | 'parallel' | 'stories'>('olChiki');
+  const [activeTab, setActiveTab] = useState<'olChiki' | 'parallel' | 'stories' | 'mundari'>('mundari');
   const [filterType, setFilterType] = useState<string>('all');
+  const [mundariSearch, setMundariSearch] = useState<string>('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleSpeak = (text: string, lang: TribalLanguage = currentLang) => {
@@ -22,6 +24,12 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ currentLang })
   const filteredOlChiki = olChikiData.characters.filter(c => {
     if (filterType === 'all') return true;
     return c.type === filterType;
+  });
+
+  const filteredMundari = mundariCorpusData.curatedPairs.filter(p => {
+    if (!mundariSearch.trim()) return true;
+    const q = mundariSearch.toLowerCase().trim();
+    return p.hindi.toLowerCase().includes(q) || p.mundari.toLowerCase().includes(q);
   });
 
   return (
@@ -61,7 +69,7 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ currentLang })
         </div>
 
         {/* Live Metrics Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-white/10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 mt-6 pt-6 border-t border-white/10">
           <div className="bg-white/5 rounded-2xl p-3 backdrop-blur-sm">
             <div className="text-xs text-purple-300 font-medium">Ol Chiki Glyphs</div>
             <div className="text-2xl font-bold text-white mt-0.5">{olChikiData.characters.length}</div>
@@ -73,11 +81,16 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ currentLang })
             <div className="text-[10px] text-purple-400">Classroom Commands & Math</div>
           </div>
           <div className="bg-white/5 rounded-2xl p-3 backdrop-blur-sm">
+            <div className="text-xs text-purple-300 font-medium">Mundari Pairs (Kaggle)</div>
+            <div className="text-2xl font-bold text-emerald-300 mt-0.5">{mundariCorpusData.totalSentencePairs.toLocaleString()}</div>
+            <div className="text-[10px] text-purple-400">haradibots / IIT-KGP Corpus</div>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-3 backdrop-blur-sm">
             <div className="text-xs text-purple-300 font-medium">StoryWeaver Tales</div>
             <div className="text-2xl font-bold text-white mt-0.5">{storyweaverData.stories.length}</div>
             <div className="text-[10px] text-purple-400">Grade 1-3 Graded Readers</div>
           </div>
-          <div className="bg-white/5 rounded-2xl p-3 backdrop-blur-sm">
+          <div className="bg-white/5 rounded-2xl p-3 backdrop-blur-sm col-span-2 sm:col-span-4 lg:col-span-1">
             <div className="text-xs text-purple-300 font-medium">Pipeline Status</div>
             <div className="text-sm font-bold text-emerald-400 mt-1 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4" /> 100% Ingested
@@ -89,6 +102,16 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ currentLang })
 
       {/* Navigation Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-orange-200/60 pb-3">
+        <button
+          onClick={() => setActiveTab('mundari')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+            activeTab === 'mundari'
+              ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+              : 'bg-white/80 text-stone-600 hover:bg-purple-50 hover:text-purple-600'
+          }`}
+        >
+          <Database className="w-4 h-4" /> 🌟 Kaggle Hindi-Mundari Corpus ({mundariCorpusData.totalSentencePairs.toLocaleString()})
+        </button>
         <button
           onClick={() => setActiveTab('olChiki')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
@@ -107,7 +130,7 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ currentLang })
               : 'bg-white/80 text-stone-600 hover:bg-orange-50 hover:text-orange-600'
           }`}
         >
-          <Database className="w-4 h-4" /> 2. IndicCorp FLN Parallel Sentences ({parallelCorpusData.pairs.length})
+          <Database className="w-4 h-4" /> 2. IndicCorp FLN Parallel ({parallelCorpusData.pairs.length})
         </button>
         <button
           onClick={() => setActiveTab('stories')}
@@ -117,7 +140,7 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ currentLang })
               : 'bg-white/80 text-stone-600 hover:bg-orange-50 hover:text-orange-600'
           }`}
         >
-          <BookOpen className="w-4 h-4" /> 3. StoryWeaver Graded Stories ({storyweaverData.stories.length})
+          <BookOpen className="w-4 h-4" /> 3. StoryWeaver Tales ({storyweaverData.stories.length})
         </button>
       </div>
 
@@ -293,6 +316,99 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ currentLang })
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* TAB 4: Kaggle Hindi-Mundari Parallel Corpus */}
+      {activeTab === 'mundari' && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={mundariSearch}
+                onChange={(e) => setMundariSearch(e.target.value)}
+                placeholder="खोजें (Search Hindi or Mundari words: उदा. दोस्त, जंगल, घर, काम, पानी, बात)..."
+                className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-stone-900"
+              />
+              <Database className="w-4 h-4 text-purple-600 absolute left-3 top-1/2 -translate-y-1/2" />
+              {mundariSearch && (
+                <button
+                  onClick={() => setMundariSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs font-bold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between sm:justify-end gap-3 text-xs text-stone-500 shrink-0">
+              <span>
+                दिखाए जा रहे हैं: <strong className="text-purple-700">{filteredMundari.length}</strong> / {mundariCorpusData.totalSentencePairs.toLocaleString()}
+              </span>
+              <a
+                href={mundariCorpusData.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => {
+                  if ((window as any).electronAPI?.openExternal) {
+                    e.preventDefault();
+                    (window as any).electronAPI.openExternal(mundariCorpusData.sourceUrl);
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold rounded-lg border border-purple-200 transition-all"
+              >
+                Kaggle Dataset <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-h-[620px] overflow-y-auto pr-1">
+            {filteredMundari.map((pair) => (
+              <div
+                key={pair.id}
+                className="bg-white p-4 rounded-2xl border border-stone-200 hover:border-purple-300 hover:shadow-md transition-all space-y-2.5 flex flex-col justify-between"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] text-stone-400 font-mono">
+                    <span className="bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full font-bold">
+                      {pair.id}
+                    </span>
+                    <span className="text-[10px] bg-stone-100 px-2 py-0.5 rounded-full text-stone-500">
+                      Hindi ➔ Mundari
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-stone-400 font-semibold">हिंदी (Hindi):</div>
+                    <div className="text-sm font-semibold text-stone-800 leading-snug">"{pair.hindi}"</div>
+                  </div>
+                  <div className="p-2.5 bg-purple-50/70 border border-purple-100 rounded-xl">
+                    <div className="text-[10px] text-purple-700 font-bold uppercase tracking-wider">मुण्डारी (Mundari):</div>
+                    <div className="text-base font-bold text-stone-900 mt-0.5 leading-snug">{pair.mundari}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-stone-100">
+                  <button
+                    onClick={() => handleSpeak(pair.mundari, 'mundari')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-all active:scale-95"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" /> मुण्डारी उच्चारण सुनें
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(`${pair.hindi} -> ${pair.mundari}`);
+                      setCopiedId(pair.id);
+                      setTimeout(() => setCopiedId(null), 1500);
+                    }}
+                    className="text-[11px] text-stone-500 hover:text-stone-700 font-medium px-2 py-1 rounded hover:bg-stone-100"
+                  >
+                    {copiedId === pair.id ? '✓ कॉपी किया' : 'कॉपी करें'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

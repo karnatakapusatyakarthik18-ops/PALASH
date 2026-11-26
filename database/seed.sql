@@ -84,3 +84,27 @@ INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
 ('offline_first_policy', 'enabled'),
 ('database_sync_interval_ms', '10000')
 ON DUPLICATE KEY UPDATE `setting_value` = VALUES(`setting_value`);
+
+
+-- Additional Mundari Vocabulary from Kaggle Haradibots Dataset
+INSERT INTO `vocabulary` (`source_language`, `target_language`, `source_word`, `target_word`, `phonetic`, `category`, `example_sentence`) VALUES
+('hindi', 'mundari', 'दोस्त', 'सोङगे', 'सोङ्गे', 'family', 'इनिः आञाः सोङगे तानाएः (वह मेरा दोस्त है)'),
+('hindi', 'mundari', 'जंगल', 'बिर', 'बिर', 'nature', 'एनताः बेसे बिर ताइकेना (वहाँ घने जंगल थे)'),
+('hindi', 'mundari', 'घर', 'ओड़ाः', 'ओड़ाः', 'classroom', 'ओड़ाः दुआर सोबेन बुगिगे मेनाः (घर द्वार सब ठीक है)'),
+('hindi', 'mundari', 'अच्छा', 'बुगिना', 'बुगिना', 'feelings', 'ने कामि ओड़ोःगे बुगिना (यह काम और भी अच्छा है)'),
+('hindi', 'mundari', 'काम', 'कामि', 'कामि', 'actions', 'एना ते गे आञाः कामि चालाओआ (उसी से मेरा काम चलता है)'),
+('hindi', 'mundari', 'बातचीत', 'जागार', 'जागार', 'actions', 'आपान लोः जागार होबाओताना (बातचीत हो रही है)'),
+('hindi', 'mundari', 'गाँव', 'हातु', 'हातु', 'nature', 'आलेआः हातु बेसे मेनाः (हमारा गाँव सुंदर है)'),
+('hindi', 'mundari', 'नदी', 'गाड़ा', 'गाड़ा', 'nature', 'गाड़ा रे सोबेन दाः हेसेरताना (नदी में पानी बहता है)'),
+('hindi', 'mundari', 'बारिश', 'गामा', 'गामा', 'nature', 'तिसिन गामाताना (आज बारिश हो रही है)'),
+('hindi', 'mundari', 'सूरज', 'सिंगी', 'सिंगी', 'nature', 'सेताः सिंगी ओड़ोःओताना (सुबह सूरज उगता है)'),
+('hindi', 'mundari', 'चाँद', 'चांदु', 'चांदु', 'nature', 'निदा चांदु जुलुःतानाएः (रात में चाँद चमकता है)'),
+('hindi', 'mundari', 'खाना', 'मांडी', 'मांडी', 'needs', 'सोमाए रे मांडी जोमेपे (समय पर खाना खाओ)'),
+('hindi', 'mundari', 'दूध', 'तोवा', 'तोवा', 'needs', 'गई अबुके तोवा एमाबुवा (गाय दूध देती है)'),
+('hindi', 'mundari', 'स्कूल', 'इसकुल', 'इसकुल', 'classroom', 'होनको दिनाम इसकुल सेनतानाको (बच्चे रोज स्कूल जाते हैं)'),
+('hindi', 'mundari', 'पढ़ना', 'पाड़ाओ', 'पाड़ाओ', 'classroom', 'इनिः आएः पाड़ाओ चाबाकेदाएः (उसने पढ़ाई पूरी की)'),
+('hindi', 'mundari', 'लिखना', 'ओल', 'ओल', 'classroom', 'स्लेट रे बुगिते ओलमे (स्लेट पर अच्छा लिखो)'),
+('hindi', 'mundari', 'क्या', 'चानाः', 'चानाः', 'questions', 'नेआ चानाः ताना? (यह क्या है?)'),
+('hindi', 'mundari', 'कहाँ', 'ओकोताः', 'ओकोताः', 'questions', 'अमाः ओड़ाः ओकोताः मेनाः? (तुम्हारा घर कहाँ है?)'),
+('hindi', 'mundari', 'कैसे', 'चिलका', 'चिलका', 'questions', 'अम चिलका मेनामा? (आप कैसे हैं?)')
+ON DUPLICATE KEY UPDATE `target_word` = VALUES(`target_word`);
